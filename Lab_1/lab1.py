@@ -15,16 +15,16 @@ x4 = np.zeros_like(t) #triangular
 T = 2
 # generate square and triangular waves below
 for i in range(len(t)):
-    rem = t[i] % T
     # rem tells us where we are in the current period
+    rem = t[i] % T
     
     if rem < T/2:
         x3[i] = 1.0
-        x4[i] = 1-2 * rem
+        x4[i] = -1 + 2 * rem
 
     else:
         x3[i] =-1.0
-        x4[i] = 2 * rem - 3
+        x4[i] = 3 - 2 * rem
 
 # plot
 plt.figure(figsize=(9, 8))
@@ -101,24 +101,25 @@ fig.savefig("part2_transforms.png", dpi=150)
 
 f = 1406 # your birthday frequency
 
-fs = 8192 # sampling rate (Hz)
+c = 2.00 #sampling rate multiplier, current set to nyquist rate
+delta = 10
+
+tau = 0.5
+
+fs = round(8192) # sampling rate (Hz)
 T = 4.0 # duration (s)
-N = int(fs * T)
-# total number of samples
-n = np.arange(N)
-# sample index vector
-t = n / fs
-# converts sample index to actual time
-x = np.sin(2 * np.pi * f * t)
-# the sampled sinusoid
+N = int(fs * T) # total number of samples
+n = np.arange(N) # sample index vector
+t = n / fs # converts sample index to actual time
+x = np.sin(2 * np.pi * f * t) # the sampled sinusoid
+
+y =  np.exp(-t/tau)*x # sampled sinusoid multiplied by decaying envelope
 
 
 
-
-# plot
+# plot x
 x = x / np.max(np.abs(x)) # normalize to [-1, 1]
-mask = t <= 12e-3
-# only keep first 12 ms for the plot
+mask = t <= 1 # only keep first 1 s for the plot
 plt.figure(figsize=(8, 3.5))
 plt.plot(t[mask] * 1e3, x[mask])
 plt.xlabel("t (ms)"); plt.ylabel("x(t)")
@@ -126,9 +127,19 @@ plt.grid(True); plt.tight_layout()
 plt.savefig("part3_tone.png", dpi=150)
 # saves the tone plot as a png
 
+# plot y
+y = y / np.max(np.abs(y)) # normalize to [-1, 1]
+mask = t <= 1 # only keep first 1 s for the plot
+plt.figure(figsize=(8, 3.5))
+plt.plot(t[mask] * 1e3, y[mask])
+plt.xlabel("t (ms)"); plt.ylabel("y(t)")
+plt.grid(True); plt.tight_layout()
+plt.savefig("part3_tone_decay.png", dpi=150)
+# saves the tone plot as a png
+
 try:
     import sounddevice as sd
-    sd.play(x, round(fs)); sd.wait()
+    sd.play(y, round(fs)); sd.wait()
     # plays the tone out loud and waits till done
 except Exception:
     print("Couldn't play audio")

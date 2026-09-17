@@ -1,0 +1,16 @@
+c = 3.0  -> matches
+c = 2.1  -> matches
+c = 1.9  -> lower
+c = 1.5  -> lower
+c = 1.1  -> lower
+
+nquist = 2.0
+
+for delta = 10: beat period = 100 ms, beat rate = 1/0.1s = 10Hz
+for delta = 5: beat period = 200 ms, beat rate = 1/0.2s = 5Hz
+for delta = 2: beat period = 500 ms, beat rate =  1/0.5s = 2Hz
+
+sin(A) + sin(B) = 2sin((A+B)/2)cos((A-B)/2)
+mathematical justification handwritten, will type up in latex
+
+sound gets quieter with time, matches plot which shows amplititude of signal decaying with time
