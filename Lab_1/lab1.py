@@ -20,11 +20,11 @@ for i in range(len(t)):
     
     if rem < T/2:
         x3[i] = 1.0
-        x4[i] = -1 + 2 * rem
+        x4[i] = -1 + 4/T * rem
 
     else:
         x3[i] =-1.0
-        x4[i] = 3 - 2 * rem
+        x4[i] = 3 - 4/T * rem
 
 # plot
 plt.figure(figsize=(9, 8))
