@@ -1,0 +1,19 @@
+import numpy as np
+import matplotlib.pyplot as plt
+
+t = np.arange(0.0, 6.0, 1.0 / 2000) # 0 to 6 s, step 0.5 ms
+a_vals = [-2, -1, -0.5, 0, 0.5, 1, 2]
+
+x = [np.exp(a * t) for a in a_vals] 
+
+fig, axes = plt.subplots(2, 4, figsize=(9, 8), sharex=True)
+for ax, a, sig in zip(axes.ravel(), a_vals, x):
+    ax.plot(t, sig, label=fr"$e^{{{a}t}}$")
+    ax.set_xlabel("t (s)")
+    ax.set_ylabel("x(t)")
+    ax.grid(True, alpha=0.4)
+    ax.legend()
+
+axes.ravel()[7].axis("off")
+fig.tight_layout()
+fig.savefig("real_exponential.png", dpi=150)
