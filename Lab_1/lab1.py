@@ -87,31 +87,31 @@ fig.savefig("part2_transforms.png", dpi=150) # saves the stem plots as a png
 
 f = 1406 # your birthday frequency
 
-c = 2.00 #sampling rate multiplier, current set to nyquist rate
-delta = 10
+c = 2.00 # sampling rate multiplier, currently set to factor that produces the nyquist rate
 
-tau = 0.5
-
-fs = round(8192) # sampling rate (Hz)
+fs = round(c*f) # sampling rate (Hz)
 T = 4.0 # duration (s)
 N = int(fs * T) # total number of samples
 n = np.arange(N) # sample index vector
 t = n / fs # converts sample index to actual time
 x = np.sin(2 * np.pi * f * t) # the sampled sinusoid
 
-y =  np.exp(-t/tau)*x # sampled sinusoid multiplied by decaying envelope
 
 
+#delta = 2 # offset of second sinusoid
+#x = np.sin(2 * np.pi * f * t) +  np.sin(2 * np.pi * (f + delta) * t) # the sampled sinusoid, with additional added sinusoid offset by delta
 
 # plot x
 x = x / np.max(np.abs(x)) # normalize to [-1, 1]
-mask = t <= 1 # only keep first 1 s for the plot
+mask = t <= 24e-3 # plot window widened to 1s
 plt.figure(figsize=(8, 3.5))
 plt.plot(t[mask] * 1e3, x[mask])
 plt.xlabel("t (ms)"); plt.ylabel("x(t)")
 plt.grid(True); plt.tight_layout()
-plt.savefig("part3_tone.png", dpi=150) # saves the tone plot as a png
+plt.savefig("part3_nyquist.png", dpi=150) # saves the tone plot as a png
 
+tau = 0.5 # decay factor
+y =  np.exp(-t/tau)*x # sampled sinusoid multiplied by decaying envelope
 
 # plot y
 y = y / np.max(np.abs(y)) # normalize to [-1, 1]
@@ -124,7 +124,7 @@ plt.savefig("part3_tone_decay.png", dpi=150) # saves the tone plot as a png
 
 try:
     import sounddevice as sd
-    sd.play(y, round(fs)); sd.wait() # plays the tone out loud and waits till done
+    sd.play(x, round(fs)); sd.wait() # plays the tone out loud and waits till done
 except Exception:
     print("Couldn't play audio")
 
