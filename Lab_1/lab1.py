@@ -87,7 +87,7 @@ fig.savefig("part2_transforms.png", dpi=150) # saves the stem plots as a png
 
 f = 1406 # your birthday frequency
 
-c = 2.00 # sampling rate multiplier, currently set to factor that produces the nyquist rate
+c = 2.0  # sampling rate multiplier, currently set to factor that produces the nyquist rate
 
 fs = round(c*f) # sampling rate (Hz)
 T = 4.0 # duration (s)
@@ -103,12 +103,12 @@ x = np.sin(2 * np.pi * f * t) # the sampled sinusoid
 
 # plot x
 x = x / np.max(np.abs(x)) # normalize to [-1, 1]
-mask = t <= 24e-3 # plot window widened to 1s
+mask = t <= 12e-3 # plot window widened to 1s
 plt.figure(figsize=(8, 3.5))
 plt.plot(t[mask] * 1e3, x[mask])
 plt.xlabel("t (ms)"); plt.ylabel("x(t)")
 plt.grid(True); plt.tight_layout()
-plt.savefig("part3_nyquist.png", dpi=150) # saves the tone plot as a png
+plt.savefig("part3_c.png", dpi=150) # saves the tone plot as a png
 
 tau = 0.5 # decay factor
 y =  np.exp(-t/tau)*x # sampled sinusoid multiplied by decaying envelope
