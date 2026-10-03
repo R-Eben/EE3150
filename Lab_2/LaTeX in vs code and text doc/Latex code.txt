@@ -1,4 +1,3 @@
-Latex code
 \documentclass[12pt]{article}
 \usepackage{graphicx}
 \usepackage{adjustbox}
@@ -376,8 +375,8 @@ The RC opamp circuit was built before any measurements were taken and everything
 \addcontentsline{toc}{subsection}{5 V, 100 us}
 \begin{figure}[H]
     \centering
-     \includegraphics[width=0.48\textwidth]{3.2_p1_slow.png}
-    \includegraphics[width=0.48\textwidth]{3.2_p1_fast.png}
+     \includegraphics[width=0.48\textwidth]{3.2_0.1ms_slow.png}
+    \includegraphics[width=0.48\textwidth]{3.2_0.1ms_fast.png}
     \caption{Slow and fast sweeps for the 100 $\mu$s pulse.}
     \label{fig:p100us}
 \end{figure}
@@ -466,19 +465,19 @@ The 500 mV step produced a smooth response with similar rise and fall behavior. 
 
 \begin{figure}[H]
     \centering
-     \includegraphics[width=0.9\textwidth]{3.4_vc2_5Hz 0.png}
+     \includegraphics[width=0.9\textwidth]{3.4_vc2_5Hz.png}
     \caption{Measured $v_{c2}$ response to a 5 Hz sinusoidal input.}
     \label{}
 \end{figure}
 \begin{figure}[H]
     \centering
-     \includegraphics[width=0.9\textwidth]{3.4_vc2_15Hz 0.png}
+     \includegraphics[width=0.9\textwidth]{3.4_vc2_15Hz.png}
    \caption{Measured $v_{c2}$ response to a 15 Hz sinusoidal input.}
     \label{}
 \end{figure}
 \begin{figure}[H]
     \centering
-     \includegraphics[width=0.9\textwidth]{3.4_vc2_30Hz 0.png}
+     \includegraphics[width=0.9\textwidth]{3.4_vc2_30Hz.png}
    \caption{Measured $v_{c2}$ response to a 30 Hz sinusoidal input.}
     \label{}
 \end{figure}
