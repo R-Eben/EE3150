@@ -1,1 +1,100 @@
+# --- LaTeX auxiliary files ---
+*.aux
+*.lof
 *.log
+*.lot
+*.fls
+*.out
+*.toc
+*.fmt
+*.fot
+*.cb
+*.cb2
+.*.lb
+*.synctex.gz
+*.synctex(busy)
+*.fdb_latexmk
+*.xdv
+*.run.xml
+
+# --- Bibliography (BibTeX / Biber / BibLaTeX) ---
+*.bbl
+*.bcf
+*.blg
+*-blx.aux
+*-blx.bib
+
+# --- Index / glossary / nomenclature ---
+*.idx
+*.ilg
+*.ind
+*.glg
+*.glo
+*.gls
+*.glsdefs
+*.acn
+*.acr
+*.alg
+*.nlo
+*.nls
+
+# --- Beamer ---
+*.nav
+*.snm
+*.vrb
+
+# --- Packages that generate extras ---
+*.auxlock
+*.figlist
+*.makefile
+*-figure*.md5
+*-figure*.log
+*-figure*.dpth
+_minted*
+*.pyg
+*.thm
+*.lol
+*.tdo
+*.pytxcode
+pythontex-files-*/
+svg-inkscape/
+sage-plot-*.pdf
+*.sagetex.*
+*.upa
+*.upb
+*.mw
+*.maf
+*.mtc
+*.mtc[0-9]*
+*.slf[0-9]*
+*.slc[0-9]*
+*.sympy
+*.xmpi
+*.pax
+*.pdfsync
+*.dvi
+*.ps
+*.spl
+*.bak
+*.sav
+*.tmp
+*~
+*.xwm
+*.nav
+
+# --- Build output (uncomment the next line if you don't want PDFs tracked) ---
+# *.pdf
+
+# --- Build directories ---
+build/
+out/
+_build/
+latex.out/
+
+# --- Editor / OS junk ---
+.vscode/
+.idea/
+*.sublime-workspace
+.DS_Store
+Thumbs.db
+*.swp
