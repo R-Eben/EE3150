@@ -268,7 +268,7 @@ axn.plot(t_eval * 1e3, v2 / area, "--", color="orange", label="Normalized Triang
 
 \begin{figure}[H]
     \centering
-    \includegraphics[width=0.9\textwidth]{task2.3_handtriangle.png}
+    \includegraphics[width=0.9\textwidth]{2.3.png}
     \caption{Triangular input and $v_{c2}/(0.5AT)$ overlaid with $h(t)$.}
     \label{fig:tri_pulse}
 \end{figure}
@@ -316,14 +316,14 @@ ds_dt = np.gradient(v2_step, t_eval)
 
 \begin{figure}[H]
     \centering
-    \includegraphics[width=0.9\textwidth]{task2.4step.png}
+    \includegraphics[width=0.9\textwidth]{2.4_step.png}
     \caption{Simulated step response with analytic $s(t)$ overlaid.}
     \label{fig:step_sim}
 \end{figure}
 
 \begin{figure}[H]
     \centering
-    \includegraphics[width=0.9\textwidth]{task2.4impulse.png}
+    \includegraphics[width=0.9\textwidth]{2.4_impulse.png}
     \caption{$h(t)$ overlaid with $ds(t)/dt$ computed numerically.}
     \label{fig:step_deriv}
 \end{figure}
@@ -360,7 +360,7 @@ The RC opamp circuit was built before any measurements were taken and everything
 
 \begin{figure}[H]
     \centering
-     \includegraphics[width=0.6\textwidth]{builtopamp circuit.jpg}
+     \includegraphics[width=0.6\textwidth]{circuit_construction.jpeg}
     \caption{RC Opamp Circuit on Breadboard.}
     \label{fig:breadboard}
 \end{figure}
@@ -415,7 +415,7 @@ The RC opamp circuit was built before any measurements were taken and everything
 \addcontentsline{toc}{subsection}{Normalized traces}
 \begin{figure}[H]
     \centering
- \includegraphics[width=0.9\textwidth]{normalzied.png}
+ \includegraphics[width=0.9\textwidth]{3.2_normalized.png}
     \caption{Four measured $v_{c2}(t)$ traces normalized by pulse area, with analytic $h(t)$.}
     \label{fig:meas_norm}
 \end{figure}
@@ -619,26 +619,4 @@ for path in sorted(glob.glob(os.path.join(FOLDER, "*.csv"))):
 
 \end{lstlisting}
 
-
-
-\newpage
-\subsection*{Hand Derivations}
-\addcontentsline{toc}{subsection}{Hand derivations}
-
-% top third
-\begin{center}
-\adjustbox{trim={0 {.6667\height} 0 0}, width=0.8\textwidth}{\includegraphics{lab2_part1_notes OCR conv 1.png}}
-\end{center}
-\clearpage
-    
-% middle third
-\begin{center}
-\adjustbox{trim={0 {.3333\height} 0 {.3333\height}}, width=0.8\textwidth}{\includegraphics{lab2_part1_notes OCR conv 1.png}}
-\end{center}
-\clearpage
-
-% bottom third
-\begin{center}
-\adjustbox{trim={0 0 0 {.6667\height}}, width=0.8\textwidth}{\includegraphics{lab2_part1_notes OCR conv 1.png}}
-\end{center}
 \end{document}

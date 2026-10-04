@@ -42,25 +42,28 @@ v2_step = sol.y[1]
 ds_dt = np.gradient(v2_step, t_eval)
 
 #plot
-fig, ax = plt.subplots(2, 1, figsize=(8, 8))
+import matplotlib.pyplot as plt
 
-# Top Plot: Step Response
-ax[0].plot(t_eval * 1e3, s(t_eval), "k", lw=4, alpha=0.3, label="s(t) analytic")
-ax[0].plot(t_eval * 1e3, v2_step, "--", color="blue", label="Simulated Step Response")
-ax[0].set_title("Step Response: Simulated vs Analytic")
-ax[0].set_xlabel("t (ms)")
-ax[0].set_ylabel("Voltage (V)")
-ax[0].grid(True, alpha=0.4)
-ax[0].legend()
+# Figure 1: Step Response
+fig1, ax1 = plt.subplots(figsize=(8, 4.5))
+ax1.plot(t_eval * 1e3, s(t_eval), "k", lw=4, alpha=0.3, label="s(t) analytic")
+ax1.plot(t_eval * 1e3, v2_step, "--", color="blue", label="Simulated Step Response")
+ax1.set_title("Step Response: Simulated vs Analytic")
+ax1.set_xlabel("t (ms)")
+ax1.set_ylabel("Voltage (V)")
+ax1.grid(True, alpha=0.4)
+ax1.legend()
 
-# Bottom Plot: Impulse Response via Differentiation
-ax[1].plot(t_eval * 1e3, h(t_eval), "k", lw=4, alpha=0.3, label="h(t) analytic")
-ax[1].plot(t_eval * 1e3, ds_dt, "--", color="red", label="ds(t)/dt (Numerical Derivative)")
-ax[1].set_title("Impulse Response: Analytic h(t) vs Differentiated ds(t)/dt")
-ax[1].set_xlabel("t (ms)")
-ax[1].set_ylabel("Voltage (V)")
-ax[1].grid(True, alpha=0.4)
-ax[1].legend()
+# Figure 2: Impulse Response via Differentiation
+fig2, ax2 = plt.subplots(figsize=(8, 4.5))
+ax2.plot(t_eval * 1e3, h(t_eval), "k", lw=4, alpha=0.3, label="h(t) analytic")
+ax2.plot(t_eval * 1e3, ds_dt, "--", color="red", label="ds(t)/dt (Numerical Derivative)")
+ax2.set_title("Impulse Response: Analytic h(t) vs Differentiated ds(t)/dt")
+ax2.set_xlabel("t (ms)")
+ax2.set_ylabel("ds/dt, h(t) (1/s)")
+ax2.grid(True, alpha=0.4)
+ax2.legend()
 
+plt.show()
 plt.tight_layout()
 plt.show()

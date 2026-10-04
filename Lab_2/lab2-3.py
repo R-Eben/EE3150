@@ -11,7 +11,7 @@ tau_min, tau_max = min(tau1, tau2), max(tau1, tau2)
 A = 2.0
 T = 100e-6
 t_end = T + 8*tau_max
-t_eval = np.linspace(0.0, t_end, 4000)
+t_eval = np.linspace(0.0, t_end, 40000)
 max_step = min(T, tau_min)/20.0
 
 # vin array for plotting the triangle
