@@ -70,7 +70,7 @@
 \addcontentsline{toc}{section}{Introduction}
 % Objectives only 
 
-Our objectives for this lab were to examine how a short input pulse can be used to approximate the impulse response for a system \(h(t)\), determine how short of a pulse can be used for this approximation, and test whether, as \(T \rightarrow \infty\) the response of a system depends on the shape of the pulse. We aimed to accomplish these objectives through hand analysis of the pulse and step responses of the two-stage RC cascade shown in Figure \ref{fig:rc_circuit}, numerical modeling of the two-stage RC circuit with python, and experimental construction and measurement of the two-stage RC circuit on a breadboard.
+Our objectives for this lab were to examine how a short input pulse can be used to approximate the impulse response for a system \(h(t)\), determine how short of a pulse can be used for this approximation, and test whether, as \(T \rightarrow 0\) the response of a system depends on the shape of the pulse. We aimed to accomplish these objectives through hand analysis of the pulse and step responses of the two-stage RC cascade shown in Figure \ref{fig:rc_circuit}, numerical modeling of the two-stage RC circuit with python, and experimental construction and measurement of the two-stage RC circuit on a breadboard.
 
 \begin{figure}[H]
     \centering
@@ -171,7 +171,7 @@ s(t) &= \int_0^t h(\sigma)\,d\sigma = \frac{G}{\tau_1 - \tau_2}\int_0^t \left(e^
 \addcontentsline{toc}{subsection}{DC gain}
 As $t \to \infty$ both exponentials go to zero:
 \[
-\lim_{t\to\infty}s(t) = \frac{G}{\tau_1 - \tau_2}\big[\tau_1 - \tau_2\big] = G = 1 + \frac{R_5}{R_4}.
+\lim_{t\to\infty}s(t) = \frac{G}{\tau_1 - \tau_2}\big[\tau_1 - \tau_2\big] = \boxed{G = 1 + \frac{R_5}{R_4}}.
 \]
 
 \subsection*{6. Pulse response by superposition}
@@ -199,15 +199,17 @@ For $0 \le t < T$, $s(t-T) = 0$, so $v_{out}(t) = A\,s(t)$. For $t \ge T$:
 \begin{align*}
 v_{out}(t) &= A\big[s(t) - s(t-T)\big] \\
 &= \frac{AG}{\tau_1 - \tau_2}\Big(\big[\tau_1(1 - e^{-t/\tau_1}) + \tau_2(e^{-t/\tau_2} - 1)\big] \\
-&\qquad\qquad - \big[\tau_1(1 - e^{-(t-T)/\tau_1}) + \tau_2(e^{-(t-T)/\tau_2} - 1)\big]\Big) \\
-&= \frac{AG}{\tau_1 - \tau_2}\Big[\tau_1\left(e^{-(t-T)/\tau_1} - e^{-t/\tau_1}\right) + \tau_2\left(e^{-t/\tau_2} - e^{-(t-T)/\tau_2}\right)\Big]
+&\qquad\qquad - \big[\tau_1(1 - e^{-(t-T)/\tau_1}) + \tau_2(e^{-(t-T)/\tau_2} - 1)\big]\Big)
 \end{align*}
+\[
+\boxed{v_{out}(t) = \frac{AG}{\tau_1 - \tau_2}\Big[\tau_1\left(e^{-(t-T)/\tau_1} - e^{-t/\tau_1}\right) + \tau_2\left(e^{-t/\tau_2} - e^{-(t-T)/\tau_2}\right)\Big]}
+\]
 
 \subsection*{8. Maximum $T$ for 1\% error}
 \addcontentsline{toc}{subsection}{Maximum T}
 From Section 1.2, a 1\% error requires $T \lesssim 0.02\,\tau$, where $\tau$ is the smallest time constant of the system. Here the smallest time constant is $\tau_2 = \SI{4.7e-3}{\second}$, so
 \[
-T \lesssim 0.02\,(\SI{4.7e-3}{\second}) = \SI{9.4e-5}{\second} = \SI{94}{\micro\second}.
+T \lesssim 0.02\,(\SI{4.7e-3}{\second}) = \SI{9.4e-5}{\second} = \boxed{\SI{94}{\micro\second}}.
 \]
 
 %---------------------------------------------------------------------
@@ -524,6 +526,18 @@ $V_{c2}$ Has a much larger roll off going from the same frequency it drops fro, 
 % - area matters, not shape, as T -> 0
 % - T vs. tau_min rule
 % - simulation vs. measurement agreement, sources of error
+
+In our lab, we analyzed the two-stage RC cascade filter described by Figure \ref{fig:rc_circuit} by hand. We found the ODE which describes the two-stage RC circuit to be: \[\ddot v_{c2}(t) + \left(\frac{1}{\tau_1} + \frac{1}{\tau_2}\right)\dot v_{c2}(t) + \frac{1}{\tau_1\tau_2}v_{c2}(t) = \frac{G}{\tau_1\tau_2}v_{in}(t).\] We determined the impulse response for \(V_{c2}(t)\) to be \[h(t) = \frac{G}{\tau_1 - \tau_2}\left(e^{-t/\tau_1} - e^{-t/\tau_2}\right)u(t).\] We calculated the step response for the two-stage RC circuit to be: \[s(t) = \frac{G}{\tau_1 - \tau_2}\Big[\tau_1\left(1 - e^{-t/\tau_1}\right) + \tau_2\left(e^{-t/\tau_2} - 1\right)\Big]\].  We computed the following DC gain for the two-stage RC circuit: \[G = 1 + \frac{R_5}{R_4}.\] Using \(s(t)\), we found \(v_{out}(t)\) to be \[v_{out}(t) = \frac{AG}{\tau_1 - \tau_2}\Big[\tau_1\left(e^{-(t-T)/\tau_1} - e^{-t/\tau_1}\right) + \tau_2\left(e^{-t/\tau_2} - e^{-(t-T)/\tau_2}\right)\Big].\] Finally, we calculated that \(T\) can be \qty{94}{\micro\second} for \(v_{out}(t)\) to approximate \(h(t)\) within a 1\% error.
+
+After performing hand analysis, we conducted python simulations of output of the two-stage RC cascade filter for input pulses of area \(A = 1V\) with different lengths and compared these to the impulse response \(h(t)\). We found that a short impulse of 0.1 ms collapses almost perfectly onto \(h(t)\), a slightly longer impulse of 1 ms has a 5 - 10 \% error compared to \(h(t)\), and larger impulses of 10 ms and 50 ms don't collapse onto \(h(t)\) whatsoever. These findings confirmed our calculation that impulse width \(T\) cannot be greater than \qty{94}{\micro\second} to achieve an approximation of \(h(t)\) with a 1\% error or less. Next, we graphed the response of the two-stage RC filter when an input pulse of \(A = \qty{5}{V}, T = \qty{100}{\milli\second}\) and compared it to the response of the circuit with an input pulse of \(A = \qty{5}{V}, T = \qty{100}{\milli\second}\). The 5 V output was exactly 5 times larger than the 2 V output which demonstrated the linearity of the circuit. Then, we modified our code to give the simulated filter a \(T = \qty{100}{\micro\second},\, A = \qty{2}{V}\) triangle pulse input. We found that the resulting graph matched exactly with a square pulse of the same area which demonstrated that as \(T \rightarrow 0\) the response of the filter depends solely on the area, not the shape of the pulse. Finally, we modified the code to apply a step input to the simulated filter instead of a pulse input. We found that this response exactly matched a graph of our analytic step response \(s(t)\). We also differentiated the simulated step response and found that it exactly matched the graph of our analytical impulse response \(h(t)\). We confirmed that the final step response equals op-amp gain \(G\) to within 0.1\% and determined that the settling time depends mainly on \(\tau_{1}\) opposed to \(\tau_{2}\).
+
+When we completed our numerical simulations we built the two-stage RC cascade filter on a breadboard. We graphed the responses of the circuit for the following pulse inputs: [\(\text{amplitude} = \qty{5}{\volt}, \, \text{offset} = \qty{2.5}{\volt}, \, \text{width} = \qty{100}{\micro\second}, \, f = \qty{10}{\hertz}\)], [\(\text{amplitude} = \qty{5}{\volt}, \, \text{offset} = \qty{2.5}{\volt}, \, \text{width} = \qty{1}{\milli\second}, \, f = \qty{10}{\hertz}\)], [\(\text{amplitude} = \qty{2}{\volt}, \, \text{offset} = \qty{1}{\volt}, \, \text{width} = \qty{10}{\milli\second}, \, f = \qty{10}{\hertz}\)], and [\(\text{amplitude} = \qty{2}{\volt}, \, \text{offset} = \qty{1}{\volt}, \, \text{width} = \qty{50}{\milli\second}, \, f = \qty{1}{\hertz}\)]. We found, similarly to our numerical simulations, that a pulse of width close to \(T = \qty{94}{\micro\second}\) yields an output with a percent error of near 1 \% when compared with \(h(t)\) while pulses of higher widths result in outputs that less closely resemble \(h(t)\). After, we gave the circuit pulses of \(\text{amplitude} = \qty{500}{\milli\volt}, \, \text{offset} = \qty{250}{\milli\volt}, \, \text{width} = \qty{50}{\milli\second}, \, f = \qty{1}{\hertz}\) to analyze the step response of the circuit and found that this graph closely matched our analytical and simulated step responses for the circuit. We increased the pulses to \(\text{amplitude} = \qty{5}{\volt}, \, \text{offset} = \qty{2.5}{volt}, \, \text{width} = \qty{50}{\milli\second}, \, f = \qty{1}{\hertz}\) and found that the rising and falling edges of our output no longer matched. Finally we drove the circuit with sinusoidal inputs with amplitude 1 V peak-to-peak and 0 offset. We recorded the peak-to-peak amplitude and time shift of both \(v_{c1}\) and \(v_{c2}\) for frequencies of 5, 15, 30, 60, 120 Hz. We found that \(v_{c2}\) has a much higher roll-off than \(v_{c1}\).
+
+We had several key takeaways about impulse responses, step responses, and linear systems from this lab. First, we found that for very small widths, a pulse input can allow us to approximate the impulse response of a system. Second we found that the first statement holds true regardless of input shape as \(T \rightarrow 0\). Third, from this lab were that complex filter circuits including multiple resistors, capacitors, and an op-amp such as the two-stage RC cascade we analyzed are still linear and that linearity of a circuit can be tested by checking if output scales with input. Fourth, we confirmed for our simulated and experimental circuits that the impulse response is the derivative of the step response. Finally, in a cascaded RC filter the settling time is determined primarily by the time constant of the first RC circuit in the cascade.
+
+Overall, our experimental results aligned extremely closely with our analytical and numerical results. Minor errors may be a result of non-ideal components the stay capacitance and inductance of the breadboard and wires.
+
+Our group feels that our understanding of step responses, impulse responses, and circuits modeled by LTI systems was greatly enhanced by this lab experience.
 
 \newpage
 \section*{Appendix}
