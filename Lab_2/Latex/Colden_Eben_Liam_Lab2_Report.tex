@@ -70,7 +70,7 @@
 \addcontentsline{toc}{section}{Introduction}
 % Objectives only 
 
-Our objectives for this lab were to examine how a short input pulse can be used to approximate the impulse response for a system \(h(t)\), determine how short a pulse length $T$ can be used for this approximation, and test whether, as \(T \rightarrow 0\) the response of a system depends on the shape of the pulse. We aimed to accomplish these objectives through hand analysis of the pulse and step responses of the two-stage RC cascade shown in Figure \ref{fig:rc_circuit}, numerical modeling of the two-stage RC circuit with python, and experimental construction and measurement of the two-stage RC circuit on a breadboard.
+Our objectives for this lab were to examine how a short input pulse can be used to approximate the impulse response $h(t)$ of a system, determine how short a pulse length $T$ must be for this approximation, and test whether, as $T \rightarrow 0$, the response of a system depends on the shape of the pulse. We also aimed to verify the relationship between the step and impulse responses, measure the step response of the circuit at small and large input amplitudes, and determine the responses of both stages of the system to sinusoidal inputs of increasing frequency. We aimed to accomplish these objectives through hand analysis of the pulse and step responses of the two-stage RC cascade shown in Figure~\ref{fig:rc_circuit}, numerical modeling of the circuit in Python, and experimental construction and measurement of the circuit on a breadboard.
 
 \begin{figure}[H]
     \centering
@@ -272,7 +272,7 @@ for T in [100e-6, 1e-3, 10e-3, 50e-3]:
     \caption{Area-normalized response for $A=5$ V and $A=1$ V at $T=100$ ms.}
     \label{fig:amp_compare}
 \end{figure}
-In Figure \ref{fig:amp_compare}, the $A = 1$ V and $A = 5$ V curves land right on top of each other so the area-normalized curves are identical (the only difference is tiny numerical error from the solver). This shows the homogeneous property of the linear system. When the input gets 5 times bigger, the output also gets exactly 5 times bigger, so dividing by $A\cdot T$ cancels the amplitude out and same curve both times. The flat part of the curves sits at about $57s^{-1}$, which is $G/T = 5.7/0.1=57s^{-1}$. This makes sense because the output settles at the DC gain $G$ times the input before the pulse ends. Neither curve matches $h(t)$ because 100 ms is way too long to act like an impulse, but that is fine since this test is only checking an aspect of linearity.
+In Figure \ref{fig:amp_compare}, the $A = 1$ V and $A = 5$ V curves land right on top of each other so the area-normalized curves are identical (the only difference is tiny numerical error from the solver). This shows the homogeneous property of the linear system. When the input gets 5 times bigger, the output also gets exactly 5 times bigger, so dividing by $A\cdot T$ cancels the amplitude out and same curve both times. The flat part of the curves sits at about $57s^{-1}$, which matches $G/T = 5.7/0.1=57s^{-1}$. This makes sense because the output settles at the DC gain $G$ times the input before the pulse ends. Neither curve matches $h(t)$ because 100 ms is way too long to act like an impulse, but that is fine since this test is only checking an aspect of linearity.
 
 \begin{lstlisting}[style=python, caption={Modified code for comparison of area-normalized outputs for different amplitude inputs.}]
 def f_rhs(t, x, T, A): # needed for solve_ivp
@@ -497,7 +497,7 @@ The RC opamp circuit was built before any measurements were taken and everything
     \caption{Four measured $v_{c2}(t)$ traces normalized by pulse area, with analytic $h(t)$.}
     \label{fig:meas_norm}
 \end{figure}
-\textbf{Agreement with h(t):} The \SI{100}{\micro\second} and the 1ms pulses have the best agreement with h(t), the peaks and timing of the other graphs don't line up nearly as well, as the pulse no longer approximates an impulse at larger widths. ##### FINISH is due to the signal not acting like an impulse at the higher widths, so the circuit has time to respond. Errors on top of this point to component tolerances, oscilloscope measurements, and a non-ideal pulse from the function generator.
+\textbf{Agreement with h(t):} The responses of the \SI{100}{\micro\second} and the \SI{1}{\milli\second} pulses have the best agreement with h(t), with their peaks and decay lining up relatively close to h(t). For the \SI{10}{\milli\second} pulse response, while it has a similar overall shape to h(t), it peaks lower and later than h(t). The \SI{50}{\milli\second} pulse response does not resemble h(t) at all, and appears more like the simulated step response from Task 2.4, except decaying when the pulse ends at \SI{50}{\milli\second} instead of continuing to plateau. These results line up with calculations from question 8 of Task 1, where it was determined that the maximum pulse duration able to approximate h(t) within a 1\% error was \SI{94}{\micro\second}. As pulse lengths diverged from this limit, the pulse responses diverged further from h(t). Interestingly enough, however, the pulse response that matched $h(t)$ most closely was not from the shortest \SI{100}{\micro\second} pulse but from the \SI{1}{\milli\second} pulse, which can be explained as a result of the fact that output voltages for the \SI{100}{\micro\second} pulse are so small that measurement quantization and tiny DC offset errors are more noticeable. Remaining discrepancies can be attributed to component tolerances, oscilloscope resolution, and a non-ideal pulse from the function generator.
 
 %---------------------------------------------------------------------
 \newpage
@@ -519,17 +519,9 @@ The RC opamp circuit was built before any measurements were taken and everything
 \end{figure}
 The \qty{500}{\milli\volt} step produced a smooth response with matching rise and fall behavior (Figure \ref{fig:step_500mV}). The output settled at about \qty{2.82}{\volt}, giving a measured gain of about \num{5.6}, close to the theoretical $G = \num{5.7}$. Because the output stays well within the op-amp's output range, the circuit behaves linearly and the rising and falling edges are mirror-image exponentials.
 
-For the \qty{5}{\volt} step (Figure \ref{fig:step_5V}), the linear prediction for the output is $G \times \qty{5}{\volt} = \qty{28.5}{\volt}$, but the output instead flattens at about \qty{13.9}{\volt}, an apparent gain of only about \num{2.8}. This is op-amp output saturation. When LM741 is powered from \qty{\pm 15}{\volt}, the output typically swings at approximately \qty{\pm 14}{\volt}. Once the output reaches this limit, the negative feedback can no longer hold the inverting input equal to the non-inverting input, so the relation $v_{buf} = G\,v_{c1}$ breaks down and the op-amp output stays pinned at the rail. Slew rate is not the cause here, since the LM741 slews at about \qty{0.5}{\volt\per\micro\second}, far faster than the millisecond-scale changes in
-this circuit.
+For the \qty{5}{\volt} step (Figure \ref{fig:step_5V}), the linear prediction for the output is $G \times \qty{5}{\volt} = \qty{28.5}{\volt}$, but the output instead flattens at about \qty{13.9}{\volt}, an apparent gain of only about \num{2.8}. This is a result of the op-amp hitting its maximum output limits. When LM741 is powered from \qty{\pm 15}{\volt}, the output typically swings at approximately \qty{\pm 14}{\volt}, much lower than the predicted $\qty{28.5}{\volt}$ output for the \qty{5}{\volt} input. For the \qty{500}{\milli\volt} step, the output never comes close to exceeding this value, so the op-amp stays linear. However, for the \qty{5}{\volt} step, $v_{buf}$ becomes fixed at \qty{13.9}{\volt} as it is not able to increase past it. The second RC stage then simply charges toward this constant value, so the top of the $v_{c2}$ rise flattens out abruptly rather than curving smoothly toward its final value.
 
-Saturation begins when $G\,v_{c1}$ exceeds the rail, i.e.\ when
-\[
-  v_{c1} > \frac{\qty{13.9}{\volt}}{\num{5.7}} \approx \qty{2.44}{\volt}.
-\]
-For the \qty{500}{\milli\volt} step, $v_{c1}$ never exceeds \qty{0.5}{\volt}, so the op-amp stays linear. For the \qty{5}{\volt} step, $v_{c1}$ rises well past this
-threshold, which causes the asymmetry between the edges. On the rising edge, once $v_{c1}$ crosses this threshold, $v_{buf}$ b fixed at \qty{13.9}{\volt}. The second RC stage then simply charges toward this constant value, so the top of the $v_{c2}$ rise flattens out abruptly rather than curving smoothly toward its final value.
-
-On the falling edge, $v_{in}$ drops to zero immediately, but $v_{c1}$ decays from about \qty{5}{\volt} through the first RC stage. Until $v_{c1}$ falls back below \qty{2.44}{\volt}, $G\,v_{c1}$ is still above the rail and the op-amp output remains momentarily saturated, so there is a delay before $v_{c2}$ begins to fall. This delay is visible in Figure \ref{fig:step_5V}, where $v_{c2}$ begins falling several milliseconds after $v_{in}$ drops, while for the \qty{500}{\milli\volt} step it begins falling immediately. The asymmetry is therefore a result of $v_{c1}$ overshooting the saturation threshold: on the way up the output is clipped partway through the rise, and on the way down the excess voltage on $C_1$ must discharge before the output can respond.
+On the falling edge, $v_{in}$ drops to zero immediately, but the op-amp's input voltage $v_{c1}$ remains momentarily high enough for the expected output voltage to exceed the output limits. As a result, there is a delay before $v_{c2}$ begins to fall. This delay is visible in Figure \ref{fig:step_5V}, where $v_{c2}$ begins falling several milliseconds after $v_{in}$ drops, while for the \qty{500}{\milli\volt} step it begins falling immediately. This delay and the abrupt flattening of the rising edge lead to the asymmetry between the falling/rising edges.
 
 \section*{Task 3.4: Frequency Response Measurements}
 \addcontentsline{toc}{section}{Task 3.4}
@@ -559,7 +551,7 @@ On the falling edge, $v_{in}$ drops to zero immediately, but $v_{c1}$ decays fro
     \caption{Measured magnitude of $v_{c1}$ and $v_{c2}$ versus frequency.}
     \label{fig:freq_mag}
 \end{figure}
-$V_{c2}$ has a much faster roll-off. Starting at \SI{5}{\hertz}, $V_{c2}$ is at approximately \SI{5.4}{\volt}, while $V_{c1}$ is at approximately \SI{1}{\volt}. However, by \SI{60}{\hertz}, the amplitude of $V_{c2}$ decreased by nearly \SI{4}{\volt} to under \SI{1}{\volt}, whereas $V_{c1}$ only decreased by a little over \SI{0.5}{\volt}. By \SI{120}{\hertz}, the magnitude of $V_{c2}$ is only \SI{0.07}{\volt} greater than $V_{c1}$, despite starting over \SI{4}{\volt} larger in magnitude at \SI{5}{\hertz}.
+$v_{c2}$ has a much faster roll-off. Starting at \SI{5}{\hertz}, $v_{c2}$ is at \SI{5.37}{\volt}, while $v_{c1}$ is at \SI{0.94}{\volt}. By \SI{60}{\hertz}, the magnitude of $v_{c2}$ decreased to approximately \SI{0.7}{\volt}, under one-seventh of its original magnitude, whereas $v_{c1}$ only decreased to approximately \SI{0.25}{\volt}, about a quarter of its original magnitude. By \SI{120}{\hertz}, the magnitude of $v_{c2}$ is approximately 4\% of its original value, at \SI{0.2}{\volt}, whereas $v_{c1}$ is approximately 14\% of its original value, at \SI{0.13}{\volt}, showing that $v_{c2}$ rolls off faster than $v_{c1}$.
 
 %---------------------------------------------------------------------
 \newpage
@@ -573,7 +565,7 @@ $V_{c2}$ has a much faster roll-off. Starting at \SI{5}{\hertz}, $V_{c2}$ is at 
 
 In our lab, we analyzed the two-stage RC cascade filter described by Figure \ref{fig:rc_circuit} by hand. We found the ODE which describes the two-stage RC circuit to be: \[\ddot v_{c2}(t) + \left(\frac{1}{\tau_1} + \frac{1}{\tau_2}\right)\dot v_{c2}(t) + \frac{1}{\tau_1\tau_2}v_{c2}(t) = \frac{G}{\tau_1\tau_2}v_{in}(t).\] We determined the impulse response for \(v_{c2}(t)\) to be \[h(t) = \frac{G}{\tau_1 - \tau_2}\left(e^{-t/\tau_1} - e^{-t/\tau_2}\right)u(t).\] We calculated the step response for the two-stage RC circuit to be: \[s(t) = \frac{G}{\tau_1 - \tau_2}\Big[\tau_1\left(1 - e^{-t/\tau_1}\right) + \tau_2\left(e^{-t/\tau_2} - 1\right)\Big]\].  We computed the following DC gain for the two-stage RC circuit: \[G = 1 + \frac{R_5}{R_4}.\] Using \(s(t)\), when $t\geq T$ we found \(v_{out}(t)\) to be \[v_{out}(t) = \frac{AG}{\tau_1 - \tau_2}\Big[\tau_1\left(e^{-(t-T)/\tau_1} - e^{-t/\tau_1}\right) + \tau_2\left(e^{-t/\tau_2} - e^{-(t-T)/\tau_2}\right)\Big].\] Finally, we calculated that \(T\) can be at most \qty{94}{\micro\second} for \(v_{out}(t)\) to approximate \(h(t)\) within a 1\% error.
 
-After performing hand analysis, we conducted python simulations of output of the two-stage RC cascade filter for input pulses of amplitude \(A = \qty{5}{\volt}\) with different lengths and compared these to the impulse response \(h(t)\). We found that a short pulse of 0.1 ms collapses almost perfectly onto \(h(t)\), a slightly longer pulse of 1 ms has a 5--10\% error compared to \(h(t)\), and larger pulses of 10 ms and 50 ms don't collapse onto \(h(t)\) whatsoever. These findings confirmed our calculation that pulse width \(T\) cannot be greater than \qty{94}{\micro\second} to achieve an approximation of \(h(t)\) with a 1\% error or less. Next, we graphed the response of the two-stage RC filter when an input pulse of \(A = \qty{1}{V}, T = \qty{100}{\milli\second}\) and compared it to the response of the circuit with an input pulse of \(A = \qty{5}{V}, T = \qty{100}{\milli\second}\). The 5 V output was exactly 5 times larger than the 1 V output which demonstrated the linearity of the circuit. Then, we modified our code to give the simulated filter a \(T = \qty{100}{\micro\second},\, A = \qty{2}{V}\) triangle pulse input. We found that the resulting graph matched exactly with a square pulse of the same area which demonstrated that as \(T \rightarrow 0\) the response of the filter depends solely on the area, not the shape of the pulse. Finally, we modified the code to apply a step input to the simulated filter instead of a pulse input, and found the step response \(s(t)\). We then differentiated the simulated step response and found that it exactly matched the graph of our analytical impulse response \(h(t)\). We confirmed that the final step response equals op-amp gain \(G\) to within 0.1\% and determined that the settling time depends mainly on \(\tau_{1}\) opposed to \(\tau_{2}\).
+After performing hand analysis, we conducted python simulations of output of the two-stage RC cascade filter for input pulses of amplitude \(A = \qty{1}{\volt}\) with different lengths and compared these to the impulse response \(h(t)\). We found that a short pulse of 0.1 ms collapses almost perfectly onto \(h(t)\), a slightly longer pulse of 1 ms has a 5--10\% error compared to \(h(t)\), and larger pulses of 10 ms and 50 ms don't collapse onto \(h(t)\) whatsoever. These findings confirmed our calculation that pulse width \(T\) cannot be greater than \qty{94}{\micro\second} to achieve an approximation of \(h(t)\) with a 1\% error or less. Next, we graphed the response of the two-stage RC filter when an input pulse of \(A = \qty{1}{V}, T = \qty{100}{\milli\second}\) and compared it to the response of the circuit with an input pulse of \(A = \qty{5}{V}, T = \qty{100}{\milli\second}\). The 5 V output was exactly 5 times larger than the 1 V output which demonstrated the linearity of the circuit. Then, we modified our code to give the simulated filter a \(T = \qty{100}{\micro\second},\, A = \qty{2}{V}\) triangle pulse input. We found that the resulting graph matched exactly with a square pulse of the same area which demonstrated that as \(T \rightarrow 0\) the response of the filter depends solely on the area, not the shape of the pulse. Finally, we modified the code to apply a step input to the simulated filter instead of a pulse input, and found the step response \(s(t)\). We then differentiated the simulated step response and found that it exactly matched the graph of our analytical impulse response \(h(t)\). We confirmed that the final step response equals op-amp gain \(G\) to within 0.1\% and determined that the settling time depends mainly on \(\tau_{1}\) opposed to \(\tau_{2}\).
 
 When we completed our numerical simulations we built the two-stage RC cascade filter on a breadboard. We graphed the responses of the circuit for the following pulse inputs: [\(\text{amplitude} = \qty{5}{\volt}, \, \text{offset} = \qty{2.5}{\volt}, \, \text{width} = \qty{100}{\micro\second}, \, f = \qty{10}{\hertz}\)], [\(\text{amplitude} = \qty{5}{\volt}, \, \text{offset} = \qty{2.5}{\volt}, \, \text{width} = \qty{1}{\milli\second}, \, f = \qty{10}{\hertz}\)], [\(\text{amplitude} = \qty{2}{\volt}, \, \text{offset} = \qty{1}{\volt}, \, \text{width} = \qty{10}{\milli\second}, \, f = \qty{10}{\hertz}\)], and [\(\text{amplitude} = \qty{2}{\volt}, \, \text{offset} = \qty{1}{\volt}, \, \text{width} = \qty{50}{\milli\second}, \, f = \qty{1}{\hertz}\)]. We found, similarly to our numerical simulations, that a pulse of width close to \(T = \qty{94}{\micro\second}\) yields an output that closely matches \(h(t)\) while pulses of higher widths result in outputs that start to greatly drift away from \(h(t)\), with the \qty{50}{\milli\second} pulse even approximating the step response \(s(t)\) instead. After, we gave the circuit pulses of \(\text{amplitude} = \qty{500}{\milli\volt}, \, \text{offset} = \qty{250}{\milli\volt}, \, \text{width} = \qty{100}{\milli\second}, \, f = \qty{5}{\hertz}\) to analyze the step response of the circuit and observed that the rising and falling edges of the step response were mirrored. We then increased the amplitude of the pulses, while keeping the width and frequency constant, to \(\text{amplitude} = \qty{5}{\volt}, \, \text{offset} = \qty{2.5}{\volt}, \, \text{width} = \qty{100}{\milli\second}, \, f = \qty{5}{\hertz}\) and found that the rising and falling edges of our output were no longer mirrored, due to oversaturation of the op-amp. Finally, we drove the circuit with sinusoidal inputs with amplitude 1 V peak-to-peak and 0 offset. We recorded the peak-to-peak amplitude and time shift of both \(v_{c1}\) and \(v_{c2}\) for frequencies of 5, 15, 30, 60, 120 Hz. We found that \(v_{c2}\) has a much higher roll-off than \(v_{c1}\).
 
@@ -584,8 +576,8 @@ Overall, our experimental results aligned closely with our analytical and numeri
 Our group feels that our understanding of step responses, impulse responses, and circuits modeled by LTI systems was greatly enhanced by this lab experience.
 
 \newpage
-\section*{Appendix}
-\addcontentsline{toc}{section}{Appendix}
+\section*{Appendix: Plotting Code}
+\addcontentsline{toc}{section}{Appendix: Plotting Code}
 \subsection*{Task 3 Code}
 \begin{lstlisting}[style=python, caption={Python code used for graphing raw CSVs for Part 3, as well as table data for Task 3.4.}]
 import glob, os
@@ -686,5 +678,86 @@ plt.savefig("3.2_normalized.png", dpi=200)
 
 
 \end{lstlisting}
+
+\section*{Appendix: Oscilloscope Screenshots}
+\addcontentsline{toc}{section}{Appendix: Oscilloscope Screenshots}
+
+Raw oscilloscope captures for all Part 3 measurements. In every capture, Channel 1 (yellow) is $v_{in}$ and Channel 2 (green) is the measured output.
+
+% Two screenshots side by side, each with its own subcaption.
+% #1, #2 = image files; #3, #4 = subcaptions; #5 = main caption; #6 = label
+\newcommand{\scopepair}[6]{%
+  \begin{figure}[H]
+    \centering
+    \begin{subfigure}{0.49\textwidth}
+      \centering
+      \includegraphics[width=\textwidth]{#1}
+      \caption{#3}
+    \end{subfigure}\hfill
+    \begin{subfigure}{0.49\textwidth}
+      \centering
+      \includegraphics[width=\textwidth]{#2}
+      \caption{#4}
+    \end{subfigure}
+    \caption{#5}
+    \label{#6}
+  \end{figure}
+}
+
+\subsection*{Task 3.2: Pulse Responses}
+
+\scopepair{3.2_0.1ms_fast_osc.png}{3.2_0.1ms_slow_osc.png}
+  {Fast sweep}{Slow sweep}
+  {Oscilloscope captures for the \qty{5}{\volt}, \qty{100}{\micro\second}, \qty{10}{\hertz} pulse.}
+  {fig:scope_0.1ms}
+
+\scopepair{3.2_1ms_fast_osc.png}{3.2_1ms_slow_osc.png}
+  {Fast sweep}{Slow sweep}
+  {Oscilloscope captures for the \qty{5}{\volt}, \qty{1}{\milli\second}, \qty{10}{\hertz} pulse.}
+  {fig:scope_1ms}
+
+\scopepair{3.2_10ms_fast_osc.png}{3.2_10ms_slow_osc.png}
+  {Fast sweep}{Slow sweep}
+  {Oscilloscope captures for the \qty{2}{\volt}, \qty{10}{\milli\second}, \qty{10}{\hertz} pulse.}
+  {fig:scope_10ms}
+
+\scopepair{3.2_50ms_fast_osc.png}{3.2_50ms_slow_osc.png}
+  {Fast sweep}{Slow sweep}
+  {Oscilloscope captures for the \qty{2}{\volt}, \qty{50}{\milli\second}, \qty{1}{\hertz} pulse.}
+  {fig:scope_50ms}
+
+\subsection*{Task 3.3: Step Responses}
+
+\scopepair{3.3_500mV_osc.png}{3.3_5V_osc.png}
+  {\qty{500}{\milli\volt} step}{\qty{5}{\volt} step}
+  {Oscilloscope captures of the step responses (\qty{100}{\milli\second} width, \qty{5}{\hertz}).}
+  {fig:scope_steps}
+
+\subsection*{Task 3.4: Frequency Response}
+
+\scopepair{3.4_vc1_5Hz_osc.png}{3.4_vc2_5Hz_osc.png}
+  {$v_{c1}$}{$v_{c2}$}
+  {Oscilloscope captures at \qty{5}{\hertz}.}
+  {fig:scope_5Hz}
+
+\scopepair{3.4_vc1_15Hz_osc.png}{3.4_vc2_15Hz_osc.png}
+  {$v_{c1}$}{$v_{c2}$}
+  {Oscilloscope captures at \qty{15}{\hertz}.}
+  {fig:scope_15Hz}
+
+\scopepair{3.4_vc1_30Hz_osc.png}{3.4_vc2_30Hz_osc.png}
+  {$v_{c1}$}{$v_{c2}$}
+  {Oscilloscope captures at \qty{30}{\hertz}.}
+  {fig:scope_30Hz}
+
+\scopepair{3.4_vc1_60Hz_osc.png}{3.4_vc2_60Hz_osc.png}
+  {$v_{c1}$}{$v_{c2}$}
+  {Oscilloscope captures at \qty{60}{\hertz}.}
+  {fig:scope_60Hz}
+
+\scopepair{3.4_vc1_120Hz_osc.png}{3.4_vc2_120Hz_osc.png}
+  {$v_{c1}$}{$v_{c2}$}
+  {Oscilloscope captures at \qty{120}{\hertz}.}
+  {fig:scope_120Hz}
 
 \end{document}
