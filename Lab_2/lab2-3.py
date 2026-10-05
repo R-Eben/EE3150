@@ -57,12 +57,14 @@ ax[1].plot(t_eval * 1e3, v2)
 # normalized against the area
 axn.plot(t_eval * 1e3, v2 / area, "--", color="orange", label="Normalized Triangle")
 
-ax[0].set(title="Triangular input v_in(t)", ylabel="V")
-ax[0].set_xlim(-0.02, 0.2) 
+ax[0].set(title="Triangular input v_in(t)", xlabel="t (ms)", ylabel="V")
+ax[0].set_xlim(-0.02, 0.2)
 ax[0].set_ylim(0, 2.5)
 ax[1].set(title="Outputs v_c2(t)", xlabel="t (ms)", ylabel="V"); ax[1].set_xlim(0, 80)
 
-axn.set(title="h(t) and its approximation (Triangle)", xlabel="t (ms)", ylabel="V"); axn.set_xlim(0, 60)
+axn.set(title="h(t) and its approximation (Triangle)", xlabel="t (ms)", ylabel="1/s"); axn.set_xlim(0, 60)
 axn.grid(True, alpha=.4); axn.legend(fontsize=10)
-plt.tight_layout()
+
+fig1.tight_layout()
+fig2.tight_layout()
 plt.show()

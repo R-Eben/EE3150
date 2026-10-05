@@ -5,16 +5,23 @@ t = np.linspace(0, 0.06, 600)
 h = G/(tau1-tau2) * (np.exp(-t/tau1) - np.exp(-t/tau2))
 plt.plot(t*1e3, h, "k", lw=2, label="h(t) analytic")
 
-# (file, amplitude, width)
-runs = [("3.2_0.1ms_slow.csv", 5, 100e-6), ("3.2_1ms_slow.csv", 5, 1e-3),
-        ("3.2_10ms_slow.csv", 2, 10e-3), ("3.2_50ms_slow.csv", 2, 50e-3)]
+# (file, amplitude, width, legend label)
+runs = [("3.2_0.1ms_slow.csv", 5, 100e-6, "T = 0.1 ms, A = 5 V"),
+        ("3.2_1ms_slow.csv",   5, 1e-3,   "T = 1 ms, A = 5 V"),
+        ("3.2_10ms_slow.csv",  2, 10e-3,  "T = 10 ms, A = 2 V"),
+        ("3.2_50ms_slow.csv",  2, 50e-3,  "T = 50 ms, A = 2 V")]
 
-for f, A, T in runs:
+for f, A, T, label in runs:
     df = pd.read_csv(f, skiprows=7, encoding="utf-8-sig")   # data starts after the header
     time, vin, vout = df.iloc[:, 1], df.iloc[:, 2], df.iloc[:, 3]
     t0 = time[vin > A/2].iloc[0]                            # rising edge of pulse
     m = (time >= t0) & (time <= t0 + 0.06)
-    plt.plot((time[m] - t0)*1e3, vout[m]/(A*T), label=f)
+    plt.plot((time[m] - t0)*1e3, vout[m]/(A*T), label=label)
 
-plt.xlabel("t (ms)"); plt.ylabel("v_c2/(A·T)"); plt.legend(); plt.grid(alpha=.3)
+plt.title("Measured pulse responses normalized by pulse area vs. h(t)")
+plt.xlabel("t (ms)")
+plt.ylabel(r"$v_{c2}/(A \cdot T)$ (1/s)")
+plt.legend()
+plt.grid(alpha=.3)
+plt.tight_layout()
 plt.savefig("3.2_normalized.png", dpi=200)
