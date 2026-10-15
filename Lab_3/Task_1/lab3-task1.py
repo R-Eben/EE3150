@@ -35,7 +35,7 @@ ax1.grid(True)
 fig1.tight_layout()
 
 ax2.stem(n2, y2, label="y2[n] = x[n] * h[n]")
-ax2.set_title("NP.convolve")
+ax2.set_title("Convolution output 2")
 ax2.set_xlabel("n")
 ax2.legend()
 ax2.grid(True)

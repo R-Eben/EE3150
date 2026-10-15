@@ -39,7 +39,7 @@ ax.plot(freq, steady_state_amp)
 ax.set_title("Amplitude vs Frequency (64-pt moving average filter output)")
 
 ax.grid(True, alpha=0.3)
-ax.set_xlabel("Time (s)")
+ax.set_xlabel("Frequency (Hz)")
 ax.set_ylabel("Amplitude")
 ax.set_xscale('log')
 
