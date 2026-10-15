@@ -496,7 +496,7 @@ fig.savefig("task3.3_amplitude_vs_freq.png", dpi=200)
 plt.show()
 \end{lstlisting}
 
-\labfigure{task3.3_ampvfreq.png}
+\labfigure{task3.3_amplitude_vs_freq.png}
 {Moving average output amplitude versus frequency on a
 logarithmic frequency axis.}
 
@@ -729,10 +729,56 @@ M(\omega_0)=\frac{1}{\sqrt{1+(\omega_0\tau)^2}},
 \topic{Python code}
 \begin{lstlisting}[style=python]
 # task 4.3 code
+fs = 16000
 
+tau = 0.00155
+
+dt = 1.0/fs
+a = tau/(tau+dt)
+b = dt/(tau+dt)
+
+
+freq = [50, 100, 200, 500, 1000, 2000, 4000, 8000]
+
+n = np.arange(0, 1.0, dt)
+
+h_ma = np.ones(64)/64 #length-64 moving average filter      
+
+
+#create list of one second pure tones at each test frequency
+tones = []
+for f in freq:
+    tones.append(np.cos(2*np.pi*f*n))
+
+y_iir = []
+for t in tones:
+    out = np.zeros(len(t))
+    for k in range(len(t)):  # k is the current sample of the live stream
+        if k == 0:
+            out[k] = b*t[k]
+        else:
+            out[k] = a*out[k-1] + b*t[k]
+    y_iir.append(out)
+
+y_fir = []
+for t in tones:
+    y_fir.append(np.convolve(t, h_ma))
+
+#y_analytic
+f_dense = np.logspace(np.log10(freq[0]), np.log10(freq[-1]), 500)
+H_analytic = 1/np.sqrt(1 + (2*np.pi*f_dense*tau)**2)
+
+#measure steady state amplitude of output at each frequency
+steady_state_amp_iir = []
+for out in y_iir:
+    steady_state_amp_iir.append(np.max(np.abs(out[len(out)//2:])))
+
+steady_state_amp_fir = []
+for out in y_fir:
+    steady_state_amp_fir.append(np.max(np.abs(out[len(out)//2:])))
 \end{lstlisting}
 
-\labfigure{p4_gain_compare.png}
+\labfigure{task4.3_amplitude_vs_freq.png}
 {Output amplitude versus frequency for the FIR moving
 average, the IIR filter, and the analytical RC response.}
 

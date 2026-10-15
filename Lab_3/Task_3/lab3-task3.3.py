@@ -34,10 +34,10 @@ amp_low_freq = steady_state_amp[0]
 # code for plotting freq vs amplitude
 fig, ax = plt.subplots()
 
-ax.plot(freq, steady_state_amp)
+ax.plot(freq, steady_state_amp, 'o-')
 
 ax.set_title("Amplitude vs Frequency (64-pt moving average filter output)")
-
+    
 ax.grid(True, alpha=0.3)
 ax.set_xlabel("Frequency (Hz)")
 ax.set_ylabel("Amplitude")

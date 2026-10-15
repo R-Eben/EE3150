@@ -90,7 +90,7 @@ f = 1406 # your birthday frequency
 c = 2.0  # sampling rate multiplier, currently set to factor that produces the nyquist rate
 
 fs = round(c*f) # sampling rate (Hz)
-T = 4.0 # duration (s)
+T = 30.0 # duration (s)
 N = int(fs * T) # total number of samples
 n = np.arange(N) # sample index vector
 t = n / fs # converts sample index to actual time
@@ -103,12 +103,12 @@ x = np.sin(2 * np.pi * f * t) # the sampled sinusoid
 
 # plot x
 x = x / np.max(np.abs(x)) # normalize to [-1, 1]
-mask = t <= 12e-3 # plot window widened to 1s
+mask = t <= 30 # plot window widened to 1s
 plt.figure(figsize=(8, 3.5))
 plt.plot(t[mask] * 1e3, x[mask])
 plt.xlabel("t (ms)"); plt.ylabel("x(t)")
 plt.grid(True); plt.tight_layout()
-plt.savefig("part3_c.png", dpi=150) # saves the tone plot as a png
+#plt.savefig("part3_c.png", dpi=150) # saves the tone plot as a png
 
 tau = 0.5 # decay factor
 y =  np.exp(-t/tau)*x # sampled sinusoid multiplied by decaying envelope
@@ -120,7 +120,8 @@ plt.figure(figsize=(8, 3.5))
 plt.plot(t[mask] * 1e3, y[mask])
 plt.xlabel("t (ms)"); plt.ylabel("y(t)")
 plt.grid(True); plt.tight_layout()
-plt.savefig("part3_tone_decay.png", dpi=150) # saves the tone plot as a png
+plt.show()
+#plt.savefig("part3_tone_decay.png", dpi=150) # saves the tone plot as a png
 
 try:
     import sounddevice as sd
@@ -131,4 +132,4 @@ except Exception:
 from scipy.io import wavfile
 x_i16 = np.int16(x / np.max(np.abs(x)) * 32767) # converts to 16 bit int for wav format
 fname = "birthday_tone.wav"
-wavfile.write(fname, round(fs), x_i16) # writes the wav file to disk
+#wavfile.write(fname, round(fs), x_i16) # writes the wav file to disk
