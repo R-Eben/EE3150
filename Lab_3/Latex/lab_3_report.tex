@@ -285,53 +285,9 @@ Frequency (Hz) & Experimental magnitude & Analytical magnitude\\
 two-stage RC circuit.}
 \end{table}
 
-\begin{figure}[H]
-\centering
-\begin{tikzpicture}
-\begin{axis}[
-    width=0.92\linewidth,
-    height=7cm,
-    xlabel={Frequency (Hz)},
-    ylabel={Magnitude (V/V)},
-    xmin=0,
-    xmax=125,
-    ymin=0,
-    ymax=6,
-    xtick={5,15,30,60,90,120},
-    grid=major,
-    legend pos=north east
-]
-
-\addplot[
-    blue,
-    thick,
-    domain=0:120,
-    samples=200
-]
-{5.7/(sqrt(1+(2*pi*x*0.01)^2)
-      *sqrt(1+(2*pi*x*0.0047)^2))};
-\addlegendentry{Analytical}
-
-\addplot[
-    only marks,
-    mark=*,
-    mark size=2.5pt,
-    red
-]
-coordinates {
-    (5,5.37)
-    (15,3.80)
-    (30,2.01)
-    (60,0.71)
-    (120,0.20)
-};
-\addlegendentry{Experimental}
-
-\end{axis}
-\end{tikzpicture}
-\caption{Experimental and analytical magnitude versus
+\labfigure{p2_two_stage_mag.png}{Experimental and analytical magnitude versus
 frequency for the two-stage RC circuit.}
-\end{figure}
+
 
 \topic{Experimental and analytical agreement}
 
