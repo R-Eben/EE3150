@@ -1,0 +1,856 @@
+\documentclass[11pt]{article}
+\usepackage[a4paper,margin=1in]{geometry}
+\usepackage[T1]{fontenc}
+\usepackage{graphicx,amsmath,amssymb,booktabs,array,float}
+\usepackage{xcolor,listings,caption,fancyhdr,needspace}
+\usepackage[most]{tcolorbox}
+\usepackage[hidelinks]{hyperref}
+\usepackage{pgfplots}
+
+\pgfplotsset{compat=1.18}
+\definecolor{accent}{HTML}{31566B}
+\definecolor{muted}{HTML}{65717A}
+\definecolor{pale}{HTML}{F5F7F8}
+\definecolor{border}{HTML}{DCE2E6}
+\setcounter{secnumdepth}{0}
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{0.4em}
+\setlength{\emergencystretch}{2em}
+\captionsetup{font=small,labelfont=bf,skip=7pt}
+\renewcommand{\arraystretch}{1.55}
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[L]{\small EE 3150: Signals and Systems}
+\fancyhead[R]{\small Lab 3}
+\fancyfoot[C]{\thepage}
+\setlength{\headheight}{15pt}
+\renewcommand{\headrulewidth}{0.3pt}
+
+\newcommand{\answer}[1][0.45cm]{%
+  \begin{tcolorbox}[colback=pale,colframe=border,boxrule=0.4pt,
+    arc=1mm,left=9pt,right=9pt,top=6pt,bottom=6pt,breakable]
+  {\color{muted}\itshape [write here]}\par\vspace{#1}
+  \end{tcolorbox}}
+\newcommand{\blank}{\rule{1.65cm}{0.35pt}}
+\newcommand{\topic}[1]{\Needspace{4\baselineskip}\par\textbf{#1}\par\nopagebreak}
+
+\newcommand{\labfigure}[2]{%
+  \begin{figure}[H]
+    \centering
+    \IfFileExists{#1}{\includegraphics[width=0.88\linewidth,height=0.65\textheight,keepaspectratio]{#1}}{%
+    \IfFileExists{figs/#1}{\includegraphics[width=0.88\linewidth,height=0.65\textheight,keepaspectratio]{figs/#1}}{%
+    \fcolorbox{border}{pale}{\parbox[c][1.1in][c]{0.87\linewidth}{%
+      \centering\color{muted}\small Figure placeholder\\[6pt]
+      \texttt{\detokenize{#1}}}}}}
+    \caption{#2}
+  \end{figure}}
+
+\lstdefinestyle{python}{
+  language=Python,basicstyle=\ttfamily\footnotesize,
+  keywordstyle=\color{accent}\bfseries,
+  commentstyle=\color{muted},stringstyle=\color{accent},
+  backgroundcolor=\color{pale},frame=single,rulecolor=\color{border},
+  breaklines=true,showstringspaces=false,tabsize=4,
+  columns=fullflexible,keepspaces=true,
+  xleftmargin=6pt,xrightmargin=6pt,framexleftmargin=6pt,
+  framexrightmargin=6pt,aboveskip=8pt,belowskip=8pt,
+  numbers=none,captionpos=b
+}
+
+\begin{document}
+
+\begin{titlepage}
+  \centering
+  \vspace*{3cm}
+  {\large EE 3150: Signals and Systems}\\[8pt]
+  {\LARGE\bfseries Convolution and Filtering}\\[12pt]
+  Colden Briggs, Eben Radocchia, and Liam Donlan\\[4pt]
+  Instructor: Dr. Ossareh \quad $\vert$ \quad University of Vermont\\[4pt]
+  \today
+\end{titlepage}
+
+\tableofcontents
+
+\newpage
+
+% =====================================================================
+\section{Introduction}
+
+The purpose of this lab was to understand convolution and how it is used to filter signals. Discrete-time convolution was calculated by hand and in Python. The step and cosine responses of an RC circuit were then found, and the two-stage response was compared with measurements from Lab 2. Moving average, difference, and echo filters were applied to an audio clip. Finally, an IIR filter was implemented using a difference equation and compared with the moving average and analytical RC response.
+
+\newpage
+
+% =====================================================================
+\section{Part 1: Discrete-Time Convolution}
+
+\subsection*{Task 1: Mechanics of Convolution}
+
+The input sequences are
+\[
+  x[n]=\{1,2,3,1\},\quad n=0,\ldots,3,
+  \qquad
+  h[n]=\{1,-1,2\},\quad n=0,\ldots,2.
+\]
+
+\topic{Hand calculation}
+
+\labfigure{task1_handwritten.pdf}{Handwritten flip-and-slide calculation of $x[n]*h[n]$.}
+
+The convolution gives
+\[
+  y[n]=\{1,1,3,2,5,2\},\qquad n=0,\ldots,5.
+\]
+The expected output length is
+\[
+  N_y=N_x+N_h-1=4+3-1=6.
+\]
+The result has six samples, which matches the expected length.
+
+\clearpage
+\topic{Python code}
+
+\begin{lstlisting}[style=python]
+import numpy as np
+import matplotlib.pyplot as plt
+
+x = np.array([1, 2, 3, 1])
+h = np.array([1, -1, 2])
+
+
+# This code for convolution only works if x and h both start at time n=0
+def conv_loop(x, h):
+    Ny = len(x) + len(h)- 1
+    y = np.zeros(Ny)
+    for n in range(Ny): # this loop computes y[n] for different n's
+        for k in range(len(x)): # this loop implements the convolution sum
+            m = n - k
+            if 0 <= m < len(h):
+                y[n] = y[n] + x[k]*h[m]
+    return y
+
+#Loop convolution output
+y1 = conv_loop(x, h)
+n1 = np.arange(len(y1))
+
+#np.convolve convolution output
+y2 = np.convolve(x,h)
+n2 = np.arange(len(y2))
+
+
+#Plot results
+fig1, ax1 = plt.subplots(figsize=(8, 6))
+fig2, ax2 = plt.subplots(figsize=(8, 6))
+
+ax1.stem(n1, y1, label="y1[n] = x[n] * h[n]")
+
+ax1.set_title("Convolution loop output")
+ax1.set_ylabel("y[n]")
+ax1.set_xlabel("n")
+ax1.legend()
+ax1.grid(True)
+fig1.tight_layout()
+
+ax2.stem(n2, y2, label="y2[n] = x[n] * h[n]")
+ax2.set_title("np.convolve output")
+ax2.set_ylabel("y[n]")
+ax2.set_xlabel("n")
+ax2.legend()
+ax2.grid(True)
+fig2.tight_layout()
+plt.show()
+\end{lstlisting}
+
+\clearpage
+\topic{Convolution results}
+
+\labfigure{task1_conv_loop.png}{$y[n]$ computed with \texttt{conv\_loop}.}
+
+\labfigure{task1_conv_np.png}{$y[n]$ computed with \texttt{np.convolve}.}
+
+The handwritten result, the \texttt{conv\_loop} output, and the \texttt{np.convolve} output all give $y[n]=\{1,1,3,2,5,2\}$. The two stem plots are identical, so all three methods agree.
+
+\topic{Convolution with a shifted impulse}
+
+\[
+  x[n]*\delta[n-2]=x[n-2]=\{0,0,1,2,3,1\},\qquad n=0,\ldots,5.
+\]
+
+\labfigure{task1_shifted_handwritten.png}{Hand calculation and sketch of $x[n]*\delta[n-2]$.}
+
+Since $\delta[n-2]$ is nonzero only at $n=2$, the convolution sum $\sum_k x[k]\delta[n-k-2]$ keeps only the term $k=n-2$, giving $x[n-2]$, which is $x[n]$ delayed by two samples.
+
+\clearpage
+% =====================================================================
+\section{Part 2: Continuous-Time Convolution}
+
+\subsection{Task 2.1: Step Response of the First Stage}
+
+\[
+  h(t)=\frac{1}{\tau}e^{-t/\tau}u(t),\qquad \tau=R_1C_1=0.01\ \text{s}.
+\]
+
+\topic{Hand derivation and final response}
+
+\labfigure{task2.1_hand_derivation.jpeg}{Hand derivation of the first-stage step response $u(t)*h(t)$.}
+
+\topic{Numerical response}
+
+\begin{lstlisting}[style=python]
+import numpy as np
+import matplotlib.pyplot as plt
+
+tau = 0.01
+dt = 0.0001
+t = np.arange(0.0, 0.08, dt)
+
+#impulse response 
+h = (1/tau) * np.exp(-t/tau)
+
+#unit step input
+x = np.ones(len(t))
+
+#output convolution of impulse respones and unit step
+y = np.convolve(x, h) * dt
+
+# use seconds for the output time axis
+t_axis = np.arange(len(y)) * dt
+
+#analytic step response
+y_analytic = 1 - np.exp(-t/tau)
+
+#plot and compare analytic and numerical convolution results
+fig1, ax1 = plt.subplots(figsize=(8, 5))
+ax1.plot(t, y_analytic, label="hand-calculated analytic step response")
+ax1.plot(t_axis, y, "--", label="numeric step response")
+ax1.set_xlim(0, 0.08)
+ax1.set_ylim(0, 1.1)
+ax1.set_title("First-stage RC step response")
+ax1.set_xlabel("time (s)")
+ax1.set_ylabel("output amplitude")
+ax1.legend()
+ax1.grid(True)
+fig1.tight_layout()
+plt.show()
+\end{lstlisting}
+
+\labfigure{task2.1_conv.png}{Numerical step response of the first RC stage.}
+
+The hand-calculated analytic step response and the numerically calculated step response match each other very closely.
+
+\topic{Filtering behavior}
+
+The input jumps immediately from 0 to 1, but the output rises gradually toward 1. The capacitor takes time to charge, so the output cannot follow the sudden change immediately. This smooths the input and shows the low-pass behavior of the RC circuit. Slow changes pass through more easily, while fast changes are reduced.
+
+\clearpage
+\subsection{Task 2.2: Cosine Response of the First Stage}
+
+\[
+  x(t)=\cos(\omega_0t)u(t),\qquad \tau=0.01\ \text{s}.
+\]
+
+\topic{Hand derivation}
+
+\labfigure{task2.2_hand_derivations.png}{Hand derivation of the first-stage response to a cosine input.}
+
+The required form of the response is
+\[
+  y(t)=\frac{\cos\!\left(\omega_0t-\tan^{-1}(\omega_0\tau)\right)}{\sqrt{1+(\omega_0\tau)^2}}
+  -\frac{e^{-t/\tau}}{1+(\omega_0\tau)^2},\qquad t\geq 0.
+\]
+
+\topic{Steady-state response}
+
+As $t \to \infty$, the exponential term goes to 0, leaving the steady state response as follows:
+\[
+  y(t)=\frac{\cos\!\left(\omega_0t-\tan^{-1}(\omega_0\tau)\right)}{\sqrt{1+(\omega_0\tau)^2}}
+\]
+
+This is a cosine signal, with amplitude $\frac{1}{\sqrt{1+(\omega_0\tau)^2}}$, frequency $\omega_0$, and phase $-\tan^{-1}(\omega_0\tau)$.
+
+\begin{table}[H]
+  \centering
+  \begin{tabular}{ccc}
+    \toprule
+    $\omega_0\tau$ & Amplitude & Phase ($^\circ$)\\
+    \midrule
+    0.1 & 0.99504 & $-5.711$\\
+    1   & 0.70711 & $-45.000$\\
+    10  & 0.09950 & $-84.289$\\
+    \bottomrule
+  \end{tabular}
+  \caption{Amplitude and phase of the first-stage output cosine.}
+\end{table}
+
+\topic{Effect of frequency}
+
+At low frequencies, the output keeps most of the input amplitude and has only a small phase shift. As frequency increases, the output amplitude decreases and the phase approaches $-90^\circ$. This shows that the circuit passes low-frequency signals more strongly than high-frequency signals, making it a low-pass filter.
+
+At high frequencies, where $\omega_0\tau\gg1$, the amplitude is approximately $1/(\omega_0\tau)$ and the phase is approximately $-90^\circ$. The steady-state output is then
+\[
+  y_{\mathrm{ss}}(t)
+  \approx\frac{1}{\omega_0\tau}\cos\left(\omega_0t-\frac{\pi}{2}\right)
+  =\frac{1}{\omega_0\tau}\sin(\omega_0t).
+\]
+This has the form of the input's integral multiplied by $1/\tau$:
+\[
+  \frac{1}{\tau}\int\cos(\omega_0t)\,dt=\frac{1}{\omega_0\tau}\sin(\omega_0t).
+\]
+The circuit therefore acts approximately like a scaled integrator at high frequencies.
+
+\clearpage
+\subsection{Task 2.3: The Two-Stage Cascade}
+
+The two-stage circuit has
+\[
+  \tau_1=0.01\ \text{s},\qquad
+  \tau_2=0.0047\ \text{s},\qquad
+  G=5.7,\qquad
+  \omega=2\pi f.
+\]
+
+\topic{Cascade derivation}
+
+From Task 2.2, the first RC stage changes the amplitude and phase of a cosine input by
+\[
+  A_1=\frac{1}{\sqrt{1+(\omega\tau_1)^2}},\qquad
+  \phi_1=-\tan^{-1}(\omega\tau_1).
+\]
+For a unit-amplitude input, its steady-state output is
+\[
+  v_{c1,\mathrm{ss}}(t)=A_1\cos(\omega t+\phi_1).
+\]
+
+The gain buffer multiplies this signal by $G$ without changing its phase:
+\[
+  v_{\mathrm{buf,ss}}(t)=GA_1\cos(\omega t+\phi_1).
+\]
+
+Applying the same result to the second RC stage gives another amplitude factor and phase shift:
+\[
+  A_2=\frac{1}{\sqrt{1+(\omega\tau_2)^2}},\qquad
+  \phi_2=-\tan^{-1}(\omega\tau_2).
+\]
+The final steady-state output is therefore
+\[
+  v_{c2,\mathrm{ss}}(t)=GA_1A_2\cos(\omega t+\phi_1+\phi_2).
+\]
+
+The amplitude factors multiply, while the phase shifts add. Substituting the expressions for $A_1$, $A_2$, $\phi_1$, and $\phi_2$ gives the magnitude and phase below. The resulting magnitude and phase are
+\begin{align*}
+  M(\omega)    &=\frac{G}{\sqrt{1+(\omega\tau_1)^2}\sqrt{1+(\omega\tau_2)^2}},\\
+  \phi(\omega) &=-\tan^{-1}(\omega\tau_1)-\tan^{-1}(\omega\tau_2).
+\end{align*}
+
+\topic{Experimental and analytical magnitudes}
+
+The experimental values were taken from the second-stage output measurements in Task 3.4 of Lab 2. The input was 1 V peak-to-peak, so the experimental magnitude was calculated as
+\[
+  M_{\mathrm{exp}}
+  =\frac{V_{\mathrm{out,pp}}}{V_{\mathrm{in,pp}}}
+  =\frac{V_{\mathrm{out,pp}}}{1\ \text{V}}.
+\]
+
+The analytical values were calculated using the magnitude expression above.
+
+\begin{table}[H]
+  \centering
+  \begin{tabular}{ccc}
+    \toprule
+    Frequency (Hz) & Experimental magnitude & Analytical magnitude\\
+    \midrule
+    5   & 5.37 & 5.380\\
+    15  & 3.80 & 3.793\\
+    30  & 2.01 & 1.999\\
+    60  & 0.71 & 0.718\\
+    120 & 0.20 & 0.203\\
+    \bottomrule
+  \end{tabular}
+  \caption{Experimental and analytical voltage gains of the two-stage RC circuit.}
+\end{table}
+
+\labfigure{p2_two_stage_mag.png}{Experimental and analytical magnitude versus frequency for the two-stage RC circuit.}
+
+\topic{Experimental and analytical agreement}
+
+The experimental and analytical values agree closely at all five frequencies. For example, the measured magnitude at 5 Hz was 5.37, compared with an analytical value of 5.380. At 120 Hz, the measured magnitude was 0.20, compared with 0.203 analytically. Small differences could come from component tolerances and measurement uncertainty.
+
+\topic{Two-stage filtering behavior}
+
+The magnitude decreases as frequency increases. Low-frequency signals pass through with amplification, while higher-frequency signals are strongly reduced. The measured magnitude falls from 5.37 at 5 Hz to 0.20 at 120 Hz.
+
+Both RC stages reduce high-frequency content, so their combined response falls faster than the response of either stage alone. The circuit therefore acts as a two-stage low-pass filter.
+
+\clearpage
+% =====================================================================
+\section{Part 3: FIR Audio Filters}
+
+\subsection{Task 3.1: Audio Filtering}
+
+The original audio had a sampling rate of $f_s=16000$ Hz. Each filtered output was normalized before being saved and played.
+
+\topic{Python code}
+
+\begin{lstlisting}[style=python]
+from scipy.io import wavfile
+import numpy as np
+import matplotlib.pyplot as plt
+
+#read sampling frequency and data from audio clip
+fs, clip = wavfile.read("clip.wav")
+clip = clip.astype(float); 
+if clip.ndim > 1: 
+    clip = clip[:,0]
+clip = clip/np.max(np.abs(clip))
+
+#Moving average filter
+h_ma = np.ones(64)/64
+
+#Difference filter
+h_diff = np.array([1.0, -1.0])
+
+
+#Echo filter
+D = int(round(0.2 * fs))
+h_echo = np.zeros(D+1)
+h_echo[0] = 1.0
+h_echo[D] = 0.6
+
+#Moving average filter output
+y_ma = np.convolve(clip,h_ma)
+y_ma = y_ma / np.max(np.abs(y_ma)) # normalize to [-1, 1]
+
+#Difference filter output
+y_diff = np.convolve(clip,h_diff)
+y_diff = y_diff / np.max(np.abs(y_diff)) # normalize to [-1, 1]
+
+#Echo filter output
+y_echo = np.convolve(clip,h_echo)
+y_echo = y_echo / np.max(np.abs(y_echo)) # normalize to [-1, 1]
+
+
+#write outputs to files for comparison
+y_ma_i16 = np.int16(y_ma / np.max(np.abs(y_ma)) * 32767) # converts to 16 bit int for wav format
+fname = "low_pass.wav"
+wavfile.write(fname, round(fs), y_ma_i16) # writes the wav file to disk
+
+y_diff_i16 = np.int16(y_diff / np.max(np.abs(y_diff)) * 32767) # converts to 16 bit int for wav format
+fname = "high_pass.wav"
+wavfile.write(fname, round(fs), y_diff_i16) # writes the wav file to disk
+
+y_echo_i16 = np.int16(y_echo / np.max(np.abs(y_echo)) * 32767) # converts to 16 bit int for wav format
+fname = "echo.wav"
+wavfile.write(fname, round(fs), y_echo_i16) # writes the wav file to disk
+
+\end{lstlisting}
+
+\topic{Moving average filter}
+
+The moving average combines 64 samples. Fast changes are averaged out, reducing high-frequency detail and giving the audio a smoother, more muffled sound. It is called a low-pass filter because lower frequencies pass through more strongly than higher frequencies. 
+
+\topic{Difference filter}
+
+The difference filter subtracts the previous sample from the current sample. Slowly changing parts mostly cancel, while rapid changes remain. This reduces low-frequency content and emphasizes sharper changes, so the output sounds thinner and less bass-heavy. It is called a high-pass filter because it emphasizes higher frequencies relative to lower frequencies.
+
+\topic{Echo filter}
+
+For an echo delay of $0.2$ s, the number of samples is
+\[
+  D=\operatorname{round}(0.2f_s)=\operatorname{round}(0.2\times16000)=3200.
+\]
+The first nonzero value of the impulse response passes the original signal. The second produces a copy delayed by 3200 samples and scaled by $0.6$. The output therefore contains the original sound followed by a quieter copy $0.2$ s later. This was audible in the output, where a quieter copy of the original signal was heard a fraction of a second after the original signal played.
+
+\subsection{Task 3.2: Order Does Not Matter}
+
+\topic{Python code}
+
+The following code uses the original clip and filters defined in Task 3.1.
+
+\begin{lstlisting}[style=python]
+# moving average followed by echo
+y1 = np.convolve(np.convolve(clip, h_ma), h_echo)
+
+# echo followed by moving average
+y2 = np.convolve(np.convolve(clip, h_echo), h_ma)
+
+# one combined filter
+h_combined = np.convolve(h_ma, h_echo)
+y3 = np.convolve(clip, h_combined)
+
+# compare the outputs before normalization
+print(np.allclose(y1, y2))
+print(np.allclose(y1, y3))
+\end{lstlisting}
+
+\topic{Numerical agreement and sound}
+
+Both comparisons return \texttt{True}. The largest difference between the unnormalized outputs is approximately $5.6\times10^{-17}$, which is just numerical rounding. The saved audio files differ by at most one count in the 16-bit samples. Additionally, all three outputs sound identical when played back.
+
+These results show that switching the order of the filters or combining them first gives the same output to numerical precision.
+
+\topic{Meaning of the combined impulse response}
+
+The expression \texttt{np.convolve(h\_ma, h\_echo)} gives the impulse response of one filter that performs both operations. Convolving the clip with this combined filter produces the same result as passing it through the moving average and echo filters separately.
+
+\clearpage
+\subsection{Task 3.3: Moving Average Gain versus Frequency}
+
+One-second cosine signals were generated at the eight test frequencies. Each signal had an input amplitude of 1 and was filtered using the 64-sample moving average.
+
+The output amplitude was measured using the maximum absolute value in the second half of the full convolution output, following the lab procedure.
+
+\topic{Python code}
+
+\begin{lstlisting}[style=python]
+from scipy.io import wavfile
+import numpy as np
+import matplotlib.pyplot as plt
+
+#sampling rate
+fs = 16000
+
+#test frequencies
+freq = [50, 100, 200, 500, 1000, 2000, 4000, 8000]
+
+t = np.arange(0, 1.0, 1.0/fs)
+
+#create list of one second pure tones at each test frequency
+tones = []
+for f in freq:
+    tones.append(np.cos(2*np.pi*f*t))
+
+
+h_ma = np.ones(64)/64 #length-64 moving average filter      
+
+#convolve each tone with length-64 moving average filter
+y = []
+for t in tones:
+    y.append(np.convolve(t, h_ma))
+
+#measure steady state amplitude of output at each frequency
+steady_state_amp = []
+for out in y:
+    steady_state_amp.append(np.max(np.abs(out[len(out)//2:])))
+
+#assign amplitude of lowest frequency to variable
+amp_low_freq = steady_state_amp[0] 
+
+# code for plotting freq vs amplitude
+fig, ax = plt.subplots()
+
+ax.plot(freq, steady_state_amp, 'o-')
+
+ax.set_title("Amplitude vs Frequency (64-pt moving average filter output)")
+    
+ax.grid(True, alpha=0.3)
+ax.set_xlabel("Frequency (Hz)")
+ax.set_ylabel("Amplitude")
+ax.set_xscale('log')
+
+#Mark low frequency amplitude as well as half of low frequency amplitude
+ax.axhline(y=amp_low_freq, color="tab:red", linestyle="--", linewidth=1, label="Low frequency amplitude")
+ax.axhline(y=amp_low_freq/2, color="tab:green", linestyle="--", linewidth=1, label="Half of low frequency amplitude")
+ax.legend() 
+
+plt.tight_layout()
+fig.savefig("task3.3_amplitude_vs_freq.png", dpi=200)
+plt.show()
+
+\end{lstlisting}
+
+\labfigure{task3.3_amplitude_vs_freq.png}{Moving average output amplitude versus frequency on a logarithmic frequency axis.}
+
+\topic{Half-amplitude frequency}
+
+The output amplitude at the lowest test frequency, 50 Hz, was approximately $0.935$. Half of this value is
+\[
+  \frac{0.935}{2}\approx0.468.
+\]
+The measured amplitude was approximately $0.757$ at 100 Hz and $0.234$ at 200 Hz. The half-amplitude crossing is therefore between these frequencies, at roughly
+\[
+  f_{\mathrm{half}}\approx150\ \text{Hz}.
+\]
+This is an estimate because only eight frequencies were tested.
+
+\topic{Agreement with the audio filtering}
+
+The decreasing output amplitude is consistent with the loss of high-frequency detail described in Task 3.1. Reducing these frequencies makes the filtered audio smoother and more muffled.
+
+\topic{Low-pass behavior}
+
+The output amplitude is close to one at lower frequencies while the amplitude of higher frequencies is increasingly attenuated as the test frequencies increase. This shows that the moving average acts as a low-pass filter, as lower frequencies are ``passed through'', while higher frequencies are filtered out.
+
+
+\clearpage
+% =====================================================================
+\section{Part 4: IIR Filtering}
+
+The IIR filter computes each output sample using the previous output and the current input:
+\[
+  y[n]=a\,y[n-1]+b\,x[n],
+\]
+where
+\[
+  a=\frac{\tau}{\tau+dt},\qquad
+  b=\frac{dt}{\tau+dt},\qquad
+  dt=\frac{1}{f_s}.
+\]
+
+\subsection{Task 4.1: IIR Streaming}
+
+The step response was calculated using
+\[
+  \tau=0.01\ \text{s},\qquad
+  f_s=16000\ \text{Hz},\qquad
+  dt=0.0000625\ \text{s}.
+\]
+These values give
+\[
+  a\approx0.993789,\qquad b\approx0.006211.
+\]
+
+\topic{Python code}
+
+\begin{lstlisting}[style=python]
+import numpy as np
+import matplotlib.pyplot as plt
+
+#RC time constant
+tau = 0.01
+
+#sampling rate
+fs = 16000
+
+dt = 1.0/fs
+a = tau/(tau+dt)
+b = dt/(tau+dt)
+
+x = np.ones(fs)
+y = np.zeros_like(x)
+
+#numeric step result convolution via DE approximation
+for n in range(len(x)): # y[n] is the current sample of the live stream
+    y[n] = a*y[n-1] + b*x[n]
+
+fig, ax = plt.subplots()
+n = np.arange(len(y))
+
+t = n * dt 
+
+#analytic step response
+s_analytic = 1 - np.exp(-t/tau)
+
+#Plot and compare analytic and numeric step results
+ax.plot(t, y, label="numeric")
+ax.plot(t, s_analytic, "--", label="analytic")
+ax.legend()
+
+ax.set_title("Analytic vs. Numeric RC Step Response")
+
+ax.grid(True, alpha=0.3)
+ax.set_xlim(0, 0.1)     
+ax.set_xlabel("Time (s)")
+ax.set_ylabel("Output")
+
+plt.tight_layout()
+fig.savefig("task4.1_step_response.png", dpi=200)
+plt.show()
+\end{lstlisting}
+
+\labfigure{task4.1_step_response.png}{Numerical IIR step response compared with the analytical RC step response.}
+
+\topic{Comparison of the step responses}
+
+The numerical and analytical curves nearly overlap. Both rise quickly at first and then approach a final value of 1. The small difference comes from approximating the continuous-time system using a finite sampling interval. This shows that the IIR filter closely approximates the RC circuit's step response.
+
+\clearpage
+\subsection{Task 4.2: Audio Filtering and FIR/IIR Comparison}
+
+The audio filter used
+\[
+  R_1=3.3\ \text{k}\Omega,\qquad
+  C_1=470\ \text{nF},\qquad
+  \tau\approx1.55\ \text{ms}.
+\]
+At $f_s=16000$ Hz, the coefficients are
+\[
+  a=\frac{0.00155}{0.00155+0.0000625}\approx0.961240,
+\]
+\[
+  b=\frac{0.0000625}{0.00155+0.0000625}\approx0.038760.
+\]
+
+\topic{Audio filtering code}
+
+\begin{lstlisting}[style=python]
+from scipy.io import wavfile
+import numpy as np
+import matplotlib.pyplot as plt
+
+#read sampling frequency and data from audio clip
+fs, clip = wavfile.read("clip.wav")
+clip = clip.astype(float); 
+if clip.ndim > 1: 
+    clip = clip[:,0]
+clip = clip/np.max(np.abs(clip))
+
+#RC time constant
+tau = 0.00155
+
+dt = 1.0/fs
+a = tau/(tau+dt)
+b = dt/(tau+dt)
+
+y = np.zeros_like(clip)
+
+#pass clip through RC filter
+for n in range(len(clip)): # y[n] is the current sample of the live stream
+    y[n] = a*y[n-1] + b*clip[n]
+
+#write output to files for comparison
+y_i16 = np.int16(y / np.max(np.abs(y)) * 32767) # converts to 16 bit int for wav format
+fname = "clip_RC_filter.wav"
+wavfile.write(fname, round(fs), y_i16) # writes the wav file to disk
+\end{lstlisting}
+
+\topic{Sound compared with the FIR moving average}
+
+The IIR filter and the FIR moving average both reduce high-frequency content and both sound similar, smoothing and slightly muffling the original signal.
+
+\topic{Computational advantages and disadvantages}
+
+The IIR update requires two multiplications and one addition per output sample. It only needs to keep the previous output, making it useful for real-time filtering.
+
+Direct convolution with the 64-sample FIR moving average requires 64 multiplications and 63 additions per output sample. It also needs a history of input samples. This requires more computation and memory than the first-order IIR filter. A running-sum implementation could make this particular moving average more efficient.
+
+\topic{Filtering advantages and disadvantages}
+
+The IIR filter gives an RC-like low-pass response using only two coefficients. However, feedback means its coefficients must be chosen carefully to keep it stable. Here, $|a|<1$, so the filter is stable.
+
+An FIR filter with finite coefficients is stable because it has no feedback. Symmetric FIR filters, including this moving average, can provide linear phase. The IIR filter has frequency-dependent phase delay. A disadvantage of FIR filtering is that sharper frequency selection can require a longer filter and more computation.
+
+\clearpage
+\subsection{Task 4.3: IIR Gain versus Frequency}
+
+The analytical RC magnitude response uses the time constant from Task 4.2:
+\[
+  M(\omega_0)=\frac{1}{\sqrt{1+(\omega_0\tau)^2}},\qquad
+  \omega_0=2\pi f,\qquad
+  \tau=0.00155\ \text{s}.
+\]
+
+\topic{Python code}
+
+\begin{lstlisting}[style=python]
+from scipy.io import wavfile
+import numpy as np
+import matplotlib.pyplot as plt
+
+#sampling frequency
+fs = 16000
+
+#RC time constant
+tau = 0.00155
+
+dt = 1.0/fs
+a = tau/(tau+dt)
+b = dt/(tau+dt)
+
+#frequency list
+freq = [50, 100, 200, 500, 1000, 2000, 4000, 8000]
+
+n = np.arange(0, 1.0, dt)
+
+#FIR filter
+h_ma = np.ones(64)/64 #length-64 moving average filter      
+
+#create list of one second pure tones at each test frequency
+tones = []
+for f in freq:
+    tones.append(np.cos(2*np.pi*f*n))
+
+#tones filted via IIR filter derived from the first stage of the RC circuit
+y_iir = []
+for t in tones:
+    out = np.zeros(len(t))
+    for k in range(len(t)):  # k is the current sample of the live stream
+        if k == 0:
+            out[k] = b*t[k]
+        else:
+            out[k] = a*out[k-1] + b*t[k]
+    y_iir.append(out)
+
+#tones filtered via FIR filter h_ma
+y_fir = []
+for t in tones:
+    y_fir.append(np.convolve(t, h_ma))
+
+
+
+#measure steady state amplitude of IIR filter output at each frequency
+steady_state_amp_iir = []
+for out in y_iir:
+    steady_state_amp_iir.append(np.max(np.abs(out[len(out)//2:])))
+
+#measure steady state amplitude of FIR filter output at each frequency
+steady_state_amp_fir = []
+for out in y_fir:
+    steady_state_amp_fir.append(np.max(np.abs(out[len(out)//2:])))
+
+#analytic steady state amplitude for IIR filter derived from first stage of the RC circuit
+f_analytic = np.arange(50, 8000, 1)
+H_analytic = 1/np.sqrt(1 + (2*np.pi*f_analytic*tau)**2)
+
+# code for plotting freq vs amplitude
+fig, ax = plt.subplots()
+
+ax.plot(freq, steady_state_amp_iir, 'o-', label='IIR Output Steady-State Amplitude (RC circuit)')
+ax.plot(freq, steady_state_amp_fir, 'o-', label='FIR Output Steady-State Amplitude (Moving average)')
+ax.plot(f_analytic, H_analytic, label='Analytic Steady-State Amplitude (RC circuit)')
+ax.legend()
+
+ax.set_title("Amplitude vs Frequency for different filter outputs")
+
+ax.grid(True, alpha=0.3)
+ax.set_xlabel("Frequency (Hz)")
+ax.set_ylabel("Amplitude")
+ax.set_xscale('log')
+
+
+plt.tight_layout()
+fig.savefig("task4.3_amplitude_vs_freq.png", dpi=200)
+plt.show()
+\end{lstlisting}
+
+\labfigure{task4.3_amplitude_vs_freq.png}{Output amplitude versus frequency for the FIR moving average, the IIR filter, and the analytical RC response.}
+
+\topic{Agreement between the IIR and analytical responses}
+
+The IIR and analytical responses agree very closely to each other, with small deviations at the highest frequencies.
+
+\topic{Comparison of the three curves and low-pass behavior}
+
+All three curves have larger amplitudes at low frequencies and smaller amplitudes at high frequencies. Both the FIR moving average and the IIR filter therefore show low-pass behavior.
+
+The two digital filters do not reduce every frequency by the same amount. At the tested frequencies from 200 Hz upward, the FIR output amplitude is smaller than the IIR output amplitude. For example, at 200 Hz, the FIR amplitude is about 0.234, while the IIR amplitude is about 0.449. The IIR curve follows the analytical RC response more closely because it was calculated from the RC circuit's difference-equation approximation.
+
+% =====================================================================
+\section{Conclusion}
+
+The hand calculation, convolution loop, and NumPy function gave the same discrete-time convolution result. Convolution with a shifted impulse delayed the signal without changing its shape. For the RC circuit, the numerical step response closely matched the hand calculation. The cosine response showed that higher frequencies were reduced more than lower frequencies. The two-stage analytical magnitudes also agreed closely with the measurements from Lab 2.
+
+The audio filters showed different ways to change a signal. The moving average reduced high-frequency content, the difference filter reduced low-frequency content, and the echo filter added a delayed copy. Changing the order of the moving average and echo filters gave the same result to numerical precision. The IIR filter modeled after the RC response created a low-pass filter with fewer calculations per sample than direct FIR convolution. Its frequency response was close to the analytical RC response at lower frequencies, with larger relative differences near the sampling limit.
+
+Overall, this lab showed how filtering is simply an application of convolution. All the filters created in this lab were made by convolving the input signal, either directly or through a recursive difference equation, with different impulse responses, to produce different desired outputs (such as low-pass or high-pass). Altering the impulse response of a system affects how it filters different inputs. 
+
+\paragraph{Take-aways.}
+
+\begin{itemize}
+  \item Convolution gives the output of an LTI system from $x$ and $h$; the output length is $N_x+N_h-1$.
+  \item Continuous-time convolution can be approximated by \texttt{np.convolve} $\times dt$.
+  \item An RC circuit can function like a low-pass filter, retaining low frequency signals while attenuating higher frequency signals.
+  \item In a cascade, magnitudes multiply and phases add. Additionally, sinusoids make cascade analysis easy, as each portion of the cascade just alters the amplitude and phase of the input signal, without affecting the frequency. 
+  \item FIR filters are always stable and can have linear phase.
+  \item IIR filters can achieve similar filtering to FIR filters with far fewer operations, but require feedback coefficients chosen to maintain stability.
+\end{itemize}
+
+\end{document}
