@@ -74,9 +74,18 @@
 
 \newpage
 
+
 \section{Introduction}
-% objective of the lab
-\answer
+
+The purpose of this lab was to understand convolution and
+how it is used to filter signals. Discrete-time convolution
+was calculated by hand and in Python. The step and cosine
+responses of an RC circuit were then found, and the
+two-stage response was compared with measurements from
+Lab 2. Moving average, difference, and echo filters were
+applied to an audio clip. Finally, an IIR filter was
+implemented using a difference equation and compared with
+the moving average and analytical RC response.
 
 \newpage
 
@@ -221,8 +230,14 @@ plt.show()
 The hand-calculated analytic step response and the numerically calculated step response match each other very closely.
 
 \topic{Filtering behavior}
-% explain the slow output compared with the abrupt input step
-\answer[0.3cm]
+
+The input jumps immediately from 0 to 1, but the output
+rises gradually toward 1. The capacitor takes time to charge,
+so the output cannot follow the sudden change immediately.
+This smooths the input and shows the low-pass behavior of
+the RC circuit. Slow changes pass through more easily,
+while fast changes are reduced.
+
 
 \clearpage
 \subsection{Task 2.2: Cosine Response of the First Stage}
@@ -262,14 +277,35 @@ $\omega_0\tau$ & Amplitude & Phase ($^\circ$)\\
 \end{table}
 
 \topic{Effect of frequency}
-At lower frequencies, most of the input amplitude is retained by the output, but as the frequency of the input signal increases, the output amplitude is increasingly attenuated. Additionally, at lower frequencies, the phase shift is very small, making the output closely match the input, but as the frequency of the input signal increases, the output phase increases in magnitude, approaching $-90^\circ$ (due to the output bounds of the inverse tangent function). A cosine shifted by $-90^\circ$ is simply a sine function, and additionally, as the amplitude falls off roughly proportional to $\frac{1}{\omega_0}$ at higher frequencies, this means that the output closely matches the integral of the input at higher frequencies, as shown below.
 
+At low frequencies, the output keeps most of the input
+amplitude and has only a small phase shift. As frequency
+increases, the output amplitude decreases and the phase
+approaches $-90^\circ$. This shows that the circuit passes
+low-frequency signals more strongly than high-frequency
+signals, making it a low-pass filter.
+
+At high frequencies, where $\omega_0\tau\gg1$, the amplitude
+is approximately $1/(\omega_0\tau)$ and the phase is
+approximately $-90^\circ$. The steady-state output is then
 \[
-  \int \cos(\omega_0 t)\,dt
-  = \frac{1}{\omega_0}\sin(\omega_0 t)
-  = \frac{1}{\omega_0}\cos\!\left(\omega_0 t - 90^\circ\right)
+y_{\mathrm{ss}}(t)
+\approx
+\frac{1}{\omega_0\tau}
+\cos\left(\omega_0t-\frac{\pi}{2}\right)
+=
+\frac{1}{\omega_0\tau}\sin(\omega_0t).
 \]
-This shows how RC circuits can act as filters, by passing through the majority of the amplitude of low-frequency signals while increasingly attenuating higher and higher frequency signals.
+
+This has the form of the input's integral multiplied by
+$1/\tau$:
+\[
+\frac{1}{\tau}\int\cos(\omega_0t)\,dt
+=
+\frac{1}{\omega_0\tau}\sin(\omega_0t).
+\]
+The circuit therefore acts approximately like a scaled
+integrator at high frequencies.
 
 \clearpage
 \clearpage
@@ -286,9 +322,45 @@ G=5.7,
 \omega=2\pi f.
 \]
 
-\topic{Cascade derivation}
-\answer[0.75cm]
 
+\topic{Cascade derivation}
+
+From Task 2.2, the first RC stage changes the amplitude
+and phase of a cosine input by
+\[
+A_1=\frac{1}{\sqrt{1+(\omega\tau_1)^2}},
+\qquad
+\phi_1=-\tan^{-1}(\omega\tau_1).
+\]
+For a unit-amplitude input, its steady-state output is
+\[
+v_{c1,\mathrm{ss}}(t)
+=A_1\cos(\omega t+\phi_1).
+\]
+
+The gain buffer multiplies this signal by $G$ without
+changing its phase:
+\[
+v_{\mathrm{buf,ss}}(t)
+=GA_1\cos(\omega t+\phi_1).
+\]
+
+Applying the same result to the second RC stage gives
+another amplitude factor and phase shift:
+\[
+A_2=\frac{1}{\sqrt{1+(\omega\tau_2)^2}},
+\qquad
+\phi_2=-\tan^{-1}(\omega\tau_2).
+\]
+The final steady-state output is therefore
+\[
+v_{c2,\mathrm{ss}}(t)
+=GA_1A_2\cos(\omega t+\phi_1+\phi_2).
+\]
+
+The amplitude factors multiply, while the phase shifts add.
+Substituting the expressions for $A_1$, $A_2$, $\phi_1$,
+and $\phi_2$ gives the magnitude and phase below.
 The resulting magnitude and phase are
 \begin{align*}
 M(\omega)
@@ -431,7 +503,7 @@ strongly than higher frequencies.
 The difference filter subtracts the previous sample from the
 current sample. Slowly changing parts mostly cancel, while
 rapid changes remain. This reduces low-frequency content and
-emphasizes sharper changes, so the output is expected to sound
+emphasizes sharper changes, so the output is sounds
 thinner and less bass-heavy. It is called a high-pass filter
 because it emphasizes higher frequencies relative to lower
 frequencies.
@@ -481,7 +553,7 @@ Both comparisons return \texttt{True}. The largest difference
 between the unnormalized outputs is approximately
 $5.6\times10^{-17}$, which is just numerical rounding.
 The saved audio files differ by at most one count in the
-16-bit samples, so no audible difference is expected.
+16-bit samples.
 
 These results show that switching the order of the filters
 or combining them first gives the same output to numerical
@@ -754,7 +826,7 @@ wavfile.write(fname, round(fs), y_i16) # writes the wav file to disk
 
 The IIR filter and the FIR moving average both reduce
 high-frequency content, so a similar smoother and more
-muffled sound is expected. Their outputs do not need to
+muffled. Their outputs do not need to
 sound exactly the same because the two filters attenuate
 frequencies by different amounts.
 
@@ -886,25 +958,70 @@ plt.show()
 average, the IIR filter, and the analytical RC response.}
 
 \topic{Agreement between the IIR and analytical responses}
-\answer[0.4cm]
+
+The IIR and analytical responses agree closely at the
+lower test frequencies. At 100 Hz, the IIR amplitude is
+about 0.709, compared with 0.716 analytically. Both curves
+decrease as frequency increases.
+
+The relative difference becomes larger near the upper end
+of the frequency range. At 8000 Hz, the IIR amplitude is
+about 0.0198, compared with 0.0128 analytically. The IIR
+filter is a sampled approximation of the continuous-time
+RC circuit, so their responses do not match exactly.
+Measuring peaks only at the sample times can also affect
+the measured amplitude at high frequencies.
 
 \topic{Comparison of the three curves and low-pass behavior}
-\answer[0.4cm]
+
+All three curves have larger amplitudes at low frequencies
+and smaller amplitudes at high frequencies. Both the FIR
+moving average and the IIR filter therefore show low-pass
+behavior.
+
+The two digital filters do not reduce every frequency by
+the same amount. At the tested frequencies from 200 Hz
+upward, the FIR output amplitude is smaller than the IIR
+output amplitude. For example, at 200 Hz, the FIR amplitude
+is about 0.234, while the IIR amplitude is about 0.449.
+The IIR curve follows the analytical RC response more
+closely because it was calculated from the RC circuit's
+difference-equation approximation.
+
+The FIR measurements include the ending transient of the
+full convolution, as in Task 3.3. This contributes to the
+small nonzero amplitudes at the higher test frequencies.
+
+
 \section{Conclusion}
-\topic{Summary and what was learned}
-\answer
-\topic{Take-away messages}
+
+The hand calculation, convolution loop, and NumPy function
+gave the same discrete-time convolution result. Convolution
+with a shifted impulse delayed the signal without changing
+its shape. For the RC circuit, the numerical step response
+closely matched the hand calculation. The cosine response
+showed that higher frequencies were reduced more than lower
+frequencies. The two-stage analytical magnitudes also agreed
+closely with the measurements from Lab 2.
+
+The audio filters showed different ways to change a signal.
+The moving average reduced high-frequency content, the
+difference filter reduced low-frequency content, and the
+echo filter added a delayed copy. Changing the order of the
+moving average and echo filters gave the same result to
+numerical precision. The IIR filter produced an RC-like
+low-pass response with fewer calculations per sample than
+direct FIR convolution. Its frequency response was close
+to the analytical RC response at lower frequencies, with
+larger relative differences near the sampling limit
+\paragraph{Take-aways.}
 \begin{itemize}
-  \item \textcolor{muted}{\textit{[write here]}}
-  \item \textcolor{muted}{\textit{[write here]}}
-  \item \textcolor{muted}{\textit{[write here]}}
+  \item Convolution gives the output of an LTI system from $x$ and $h$; the output length is $N_x+N_h-1$.
+  \item Continuous-time convolution can be approximated with \texttt{np.convolve} times $dt$.
+  \item An RC circuit is a low-pass filter: gain $1/\sqrt{1+(\omega\tau)^2}$, phase approaching $-90^\circ$.
+  \item In a cascade, magnitudes multiply and phases add.
+  \item FIR filters are always stable and can have linear phase; IIR filters are cheaper per sample but need $|a|<1$.
 \end{itemize}
 
-% optional full script appendix
-% uncomment these lines after uploading lab3.py
-% \clearpage
-% \appendix
-% \section{Complete Python Code}
-% \lstinputlisting[style=python]{lab3.py}
 
 \end{document}
