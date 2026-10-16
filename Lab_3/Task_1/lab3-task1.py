@@ -7,7 +7,6 @@ h = np.array([1, -1, 2])
 
 # This code for convolution only works if x and h both start at time n=0
 def conv_loop(x, h):
-
     Ny = len(x) + len(h)- 1
     y = np.zeros(Ny)
     for n in range(Ny): # this loop computes y[n] for different n's
@@ -17,12 +16,16 @@ def conv_loop(x, h):
                 y[n] = y[n] + x[k]*h[m]
     return y
 
-
+#D.T. convolution output
 y1 = conv_loop(x, h)
-y2 = np.convolve(x,h)
 n1 = np.arange(len(y1))
+
+#C.T. convolution output
+y2 = np.convolve(x,h)
 n2 = np.arange(len(y2))
 
+
+#Plot results
 fig1, ax1 = plt.subplots(figsize=(8, 6))
 fig2, ax2 = plt.subplots(figsize=(8, 6))
 

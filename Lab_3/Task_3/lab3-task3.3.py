@@ -2,12 +2,13 @@ from scipy.io import wavfile
 import numpy as np
 import matplotlib.pyplot as plt
 
+#sampling rate
 fs = 16000
+
+#test frequencies
 freq = [50, 100, 200, 500, 1000, 2000, 4000, 8000]
 
 t = np.arange(0, 1.0, 1.0/fs)
-
-
 
 #create list of one second pure tones at each test frequency
 tones = []
@@ -27,9 +28,8 @@ steady_state_amp = []
 for out in y:
     steady_state_amp.append(np.max(np.abs(out[len(out)//2:])))
 
-amp_low_freq = steady_state_amp[0]
-
-
+#assign amplitude of lowest frequency to variable
+amp_low_freq = steady_state_amp[0] 
 
 # code for plotting freq vs amplitude
 fig, ax = plt.subplots()
@@ -43,10 +43,10 @@ ax.set_xlabel("Frequency (Hz)")
 ax.set_ylabel("Amplitude")
 ax.set_xscale('log')
 
+#Mark low frequency amplitude as well as half of low frequency amplitude
 ax.axhline(y=amp_low_freq, color="tab:red", linestyle="--", linewidth=1, label="Low frequncy amplitude")
 ax.axhline(y=amp_low_freq/2, color="tab:green", linestyle="--", linewidth=1, label="Half of low frequency amplitude")
 ax.legend() 
-
 
 plt.tight_layout()
 fig.savefig("task3.3_amplitude_vs_freq.png", dpi=200)

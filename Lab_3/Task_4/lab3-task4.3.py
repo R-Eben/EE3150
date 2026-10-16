@@ -11,11 +11,12 @@ dt = 1.0/fs
 a = tau/(tau+dt)
 b = dt/(tau+dt)
 
-
+#frequency list
 freq = [50, 100, 200, 500, 1000, 2000, 4000, 8000]
 
 n = np.arange(0, 1.0, dt)
 
+#FIR filter
 h_ma = np.ones(64)/64 #length-64 moving average filter      
 
 
@@ -24,6 +25,7 @@ tones = []
 for f in freq:
     tones.append(np.cos(2*np.pi*f*n))
 
+#tones filted via IIR filter derived from the first stage of the RC circuit
 y_iir = []
 for t in tones:
     out = np.zeros(len(t))
@@ -34,29 +36,33 @@ for t in tones:
             out[k] = a*out[k-1] + b*t[k]
     y_iir.append(out)
 
+#tones filtered via FIR filter h_ma
 y_fir = []
 for t in tones:
     y_fir.append(np.convolve(t, h_ma))
 
-#y_analytic
-f_dense = np.logspace(np.log10(freq[0]), np.log10(freq[-1]), 500)
-H_analytic = 1/np.sqrt(1 + (2*np.pi*f_dense*tau)**2)
 
-#measure steady state amplitude of output at each frequency
+
+#measure steady state amplitude of IIR filter output at each frequency
 steady_state_amp_iir = []
 for out in y_iir:
     steady_state_amp_iir.append(np.max(np.abs(out[len(out)//2:])))
 
+#measure steady state amplitude of FIR filter output at each frequency
 steady_state_amp_fir = []
 for out in y_fir:
     steady_state_amp_fir.append(np.max(np.abs(out[len(out)//2:])))
+
+#analytic steady state amplitude for IIR filter derived from first stage of the RC circuit
+f_analytic = np.arange(50, 8000, 1)
+H_analytic = 1/np.sqrt(1 + (2*np.pi*f_analytic*tau)**2)
 
 # code for plotting freq vs amplitude
 fig, ax = plt.subplots()
 
 ax.plot(freq, steady_state_amp_iir, 'o-', label='IIR Output Steady-State Amplitude (RC circuit)')
 ax.plot(freq, steady_state_amp_fir, 'o-', label='FIR Output Steady-State Amplitude (Moving average)')
-ax.plot(f_dense, H_analytic, label='Analytic Steady-State Amplitude (RC circuit)')
+ax.plot(f_analytic, H_analytic, label='Analytic Steady-State Amplitude (RC circuit)')
 ax.legend()
 
 ax.set_title("Amplitude vs Frequency for different filter outputs")

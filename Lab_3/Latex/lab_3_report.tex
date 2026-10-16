@@ -89,7 +89,7 @@ The input sequences are
 \]
 
 \topic{Hand calculation}
-\labfigure{p1_hand_calc.png}{Handwritten flip-and-slide calculation of $x[n]*h[n]$.}
+\labfigure{task1_handwritten.pdf}{Handwritten flip-and-slide calculation of $x[n]*h[n]$.}
 The convolution gives
 \[
   y[n]=\{1,1,3,2,5,2\},\qquad n=0,\ldots,5.
@@ -110,24 +110,27 @@ x = np.array([1, 2, 3, 1])
 h = np.array([1, -1, 2])
 
 
-# x and h both start at n = 0
+# This code for convolution only works if x and h both start at time n=0
 def conv_loop(x, h):
-
     Ny = len(x) + len(h)- 1
     y = np.zeros(Ny)
-    for n in range(Ny): # compute each output sample
-        for k in range(len(x)): # add the overlapping samples
+    for n in range(Ny): # this loop computes y[n] for different n's
+        for k in range(len(x)): # this loop implements the convolution sum
             m = n - k
             if 0 <= m < len(h):
                 y[n] = y[n] + x[k]*h[m]
     return y
 
-
+#D.T. convolution output
 y1 = conv_loop(x, h)
-y2 = np.convolve(x,h)
 n1 = np.arange(len(y1))
+
+#C.T. convolution output
+y2 = np.convolve(x,h)
 n2 = np.arange(len(y2))
 
+
+#Plot results
 fig1, ax1 = plt.subplots(figsize=(8, 6))
 fig2, ax2 = plt.subplots(figsize=(8, 6))
 
@@ -160,7 +163,7 @@ The two stem plots are identical, so all three methods agree.
 \[
   x[n]*\delta[n-2]=x[n-2]=\{0,0,1,2,3,1\},\qquad n=0,\ldots,5.
 \]
-\labfigure{p1_shifted_impulse.png}{Hand calculation and sketch of $x[n]*\delta[n-2]$.}
+\labfigure{task1_shifted_handwritten.png}{Hand calculation and sketch of $x[n]*\delta[n-2]$.}
 Since $\delta[n-2]$ is nonzero only at $n=2$, the convolution sum
 $\sum_k x[k]\delta[n-k-2]$ keeps only the term $k=n-2$, giving
 $x[n-2]$, which is $x[n]$ delayed by two samples.
@@ -173,18 +176,50 @@ $x[n-2]$, which is $x[n]$ delayed by two samples.
 \]
 
 \topic{Hand derivation and final response}
-\labfigure{p2_step_derivation.png}{Hand derivation of the first-stage step response $u(t)*h(t)$.}
+\labfigure{task2.1_hand_derivation.jpeg}{Hand derivation of the first-stage step response $u(t)*h(t)$.}
 
 \topic{Numerical response}
 
 \begin{lstlisting}[style=python]
-# task 2.1 code
+import numpy as np
+import matplotlib.pyplot as plt
 
+tau = 0.01
+dt = 0.0001
+t = np.arange(0.0, 0.08, dt)
+
+#impulse response 
+h = (1/tau) * np.exp(-t/tau)
+
+#unit step input
+x = np.ones(len(t))
+
+#output convolution of impulse respones and unit step
+y = np.convolve(x, h) * dt
+
+# use seconds for the output time axis
+t_axis = np.arange(len(y)) * dt
+
+#analytic step response
+y_analytic = 1 - np.exp(-t/tau)
+
+#plot and compare analytic and numerical convolution results
+fig1, ax1 = plt.subplots(figsize=(8, 5))
+ax1.plot(t, y_analytic, label="analytic step response")
+ax1.plot(t_axis, y, "--", label="numeric step response")
+ax1.set_xlim(0, 0.08)
+ax1.set_ylim(0, 1.1)
+ax1.set_title("First-stage RC step response")
+ax1.set_xlabel("time (s)")
+ax1.set_ylabel("output amplitude")
+ax1.legend()
+ax1.grid(True)
+fig1.tight_layout()
+plt.show()
 \end{lstlisting}
 \labfigure{task2.1_conv.png}{Numerical step response of the first RC stage.}
+The hand-calculated analytic step response and the numerically calculated step response match each other very closely.
 
-\topic{Comparison with the hand calculation}
-\answer[0.3cm]
 \topic{Filtering behavior}
 % explain the slow output compared with the abrupt input step
 \answer[0.3cm]
@@ -196,7 +231,7 @@ $x[n-2]$, which is $x[n]$ delayed by two samples.
 \]
 
 \topic{Hand derivation}
-\labfigure{p2_cosine_derivation.png}{Hand derivation of the first-stage response to a cosine input.}
+\labfigure{task2.2_hand_derivations.png}{Hand derivation of the first-stage response to a cosine input.}
 The required form of the response is
 \[
  y(t)=\frac{\cos\!\left(\omega_0t-\tan^{-1}(\omega_0\tau)\right)}
@@ -205,30 +240,36 @@ The required form of the response is
 \]
 
 \topic{Steady-state response}
+As $t \to \infty$, the exponential term goes to 0, leaving the steady state response as follows:
+\[
+ y(t)=\frac{\cos\!\left(\omega_0t-\tan^{-1}(\omega_0\tau)\right)}
+ {\sqrt{1+(\omega_0\tau)^2}},\qquad t\geq 0.
+\]
 
-\answer[0.2cm]
-
-\topic{Amplitude and phase expressions}
-
-\answer[0.2cm]
+This is a cosine signal, with amplitude $\frac{1}{\sqrt{1+(\omega_0\tau)^2}}$, frequency $\omega_0$, and phase $-\tan^{-1}(\omega_0\tau)$
 
 \begin{table}[H]
 \centering
 \begin{tabular}{ccc}
 \toprule
 $\omega_0\tau$ & Amplitude & Phase ($^\circ$)\\
-\midrule
-0.1 & \blank & \blank\\
-1   & \blank & \blank\\
-10  & \blank & \blank\\
+0.1 & 0.99504 & $-5.711$\\
+1   & 0.70711 & $-45.000$\\
+10  & 0.09950 & $-84.289$\\
 \bottomrule
 \end{tabular}
 \caption{Amplitude and phase of the first-stage output cosine.}
 \end{table}
 
 \topic{Effect of frequency}
+At lower frequencies, most of the input amplitude is retained by the output, but as the frequency of the input signal increases, the output amplitude is increasingly attenuated. Additionally, at lower frequencies, the phase shift is very small, making the output closely match the input, but as the frequency of the input signal increases, the output phase increases in magnitude, approaching $-90^\circ$ (due to the output bounds of the inverse tangent function). A cosine shifted by $-90^\circ$ is simply a sine function, and additionally, as the amplitude falls off roughly proportional to $\frac{1}{\omega_0}$ at higher frequencies, this means that the output closely matches the integral of the input at higher frequencies, as shown below.
 
-\answer[0.3cm]
+\[
+  \int \cos(\omega_0 t)\,dt
+  = \frac{1}{\omega_0}\sin(\omega_0 t)
+  = \frac{1}{\omega_0}\cos\!\left(\omega_0 t - 90^\circ\right)
+\]
+This shows how RC circuits can act as filters, by passing through the majority of the amplitude of low-frequency signals while increasingly attenuating higher and higher frequency signals.
 
 \clearpage
 \clearpage
@@ -326,41 +367,55 @@ Each filtered output was normalized before being saved and played.
 \begin{lstlisting}[style=python]
 from scipy.io import wavfile
 import numpy as np
+import matplotlib.pyplot as plt
 
+#read sampling frequency and data from audio clip
 fs, clip = wavfile.read("clip.wav")
-clip = clip.astype(float)
+clip = clip.astype(float); 
+if clip.ndim > 1: 
+    clip = clip[:,0]
+clip = clip/np.max(np.abs(clip))
 
-if clip.ndim > 1:
-    clip = clip[:, 0]
+#Moving average filter
+h_ma = np.ones(64)/64
 
-clip = clip / np.max(np.abs(clip))
-
-# define the three filters
-h_ma = np.ones(64) / 64
+#Difference filter
 h_diff = np.array([1.0, -1.0])
 
+
+#Echo filter
 D = int(round(0.2 * fs))
-h_echo = np.zeros(D + 1)
+h_echo = np.zeros(D+1)
 h_echo[0] = 1.0
 h_echo[D] = 0.6
 
-# filter the original clip
-y_ma = np.convolve(clip, h_ma)
-y_diff = np.convolve(clip, h_diff)
-y_echo = np.convolve(clip, h_echo)
+#Moving average filter output
+y_ma = np.convolve(clip,h_ma)
+y_ma = y_ma / np.max(np.abs(y_ma)) # normalize to [-1, 1]
 
-# normalize each output
-y_ma = y_ma / np.max(np.abs(y_ma))
-y_diff = y_diff / np.max(np.abs(y_diff))
-y_echo = y_echo / np.max(np.abs(y_echo))
+#Difference filter output
+y_diff = np.convolve(clip,h_diff)
+y_diff = y_diff / np.max(np.abs(y_diff)) # normalize to [-1, 1]
 
-# save the filtered audio
-wavfile.write("low_pass.wav", fs,
-              np.int16(y_ma * 32767))
-wavfile.write("high_pass.wav", fs,
-              np.int16(y_diff * 32767))
-wavfile.write("echo.wav", fs,
-              np.int16(y_echo * 32767))
+#Echo filter output
+y_echo = np.convolve(clip,h_echo)
+y_echo = y_echo / np.max(np.abs(y_echo)) # normalize to [-1, 1]
+
+
+#write outputs to files for comparison
+from scipy.io import wavfile
+y_ma_i16 = np.int16(y_ma / np.max(np.abs(y_ma)) * 32767) # converts to 16 bit int for wav format
+fname = "low_pass.wav"
+wavfile.write(fname, round(fs), y_ma_i16) # writes the wav file to disk
+
+y_diff_i16 = np.int16(y_diff / np.max(np.abs(y_diff)) * 32767) # converts to 16 bit int for wav format
+fname = "high_pass.wav"
+wavfile.write(fname, round(fs), y_diff_i16) # writes the wav file to disk
+
+y_echo_i16 = np.int16(y_echo / np.max(np.abs(y_echo)) * 32767) # converts to 16 bit int for wav format
+fname = "echo.wav"
+wavfile.write(fname, round(fs), y_echo_i16) # writes the wav file to disk
+
 \end{lstlisting}
 
 \topic{Moving average filter}
@@ -454,46 +509,60 @@ following the lab procedure.
 
 \topic{Python code}
 \begin{lstlisting}[style=python]
+from scipy.io import wavfile
 import numpy as np
 import matplotlib.pyplot as plt
 
+#sampling rate
 fs = 16000
+
+#test frequencies
 freq = [50, 100, 200, 500, 1000, 2000, 4000, 8000]
+
 t = np.arange(0, 1.0, 1.0/fs)
-h_ma = np.ones(64) / 64
 
-steady_state_amp = []
-
-# filter each tone and measure its output amplitude
+#create list of one second pure tones at each test frequency
+tones = []
 for f in freq:
-    x = np.cos(2*np.pi*f*t)
-    y = np.convolve(x, h_ma)
-    amplitude = np.max(np.abs(y[len(y)//2:]))
-    steady_state_amp.append(amplitude)
+    tones.append(np.cos(2*np.pi*f*t))
 
-amp_low_freq = steady_state_amp[0]
 
+h_ma = np.ones(64)/64 #length-64 moving average filter      
+
+#convolve each tone with length-64 moving average filter
+y = []
+for t in tones:
+    y.append(np.convolve(t, h_ma))
+
+#measure steady state amplitude of output at each frequency
+steady_state_amp = []
+for out in y:
+    steady_state_amp.append(np.max(np.abs(out[len(out)//2:])))
+
+#assign amplitude of lowest frequency to variable
+amp_low_freq = steady_state_amp[0] 
+
+# code for plotting freq vs amplitude
 fig, ax = plt.subplots()
 
-ax.plot(freq, steady_state_amp, marker="o",
-        label="moving average output")
-ax.set_xscale("log")
-ax.set_xlabel("Frequency (Hz)")
-ax.set_ylabel("Output amplitude")
-ax.set_title("64-sample moving average response")
+ax.plot(freq, steady_state_amp, 'o-')
 
-ax.axhline(amp_low_freq, color="tab:red",
-           linestyle="--",
-           label="low frequency amplitude")
-ax.axhline(amp_low_freq/2, color="tab:green",
-           linestyle="--",
-           label="half of low frequency amplitude")
-
+ax.set_title("Amplitude vs Frequency (64-pt moving average filter output)")
+    
 ax.grid(True, alpha=0.3)
-ax.legend()
-fig.tight_layout()
+ax.set_xlabel("Frequency (Hz)")
+ax.set_ylabel("Amplitude")
+ax.set_xscale('log')
+
+#Mark low frequency amplitude as well as half of low frequency amplitude
+ax.axhline(y=amp_low_freq, color="tab:red", linestyle="--", linewidth=1, label="Low frequncy amplitude")
+ax.axhline(y=amp_low_freq/2, color="tab:green", linestyle="--", linewidth=1, label="Half of low frequency amplitude")
+ax.legend() 
+
+plt.tight_layout()
 fig.savefig("task3.3_amplitude_vs_freq.png", dpi=200)
 plt.show()
+
 \end{lstlisting}
 
 \labfigure{task3.3_amplitude_vs_freq.png}
@@ -569,40 +638,45 @@ b\approx0.006211.
 
 \topic{Python code}
 \begin{lstlisting}[style=python]
+
 import numpy as np
 import matplotlib.pyplot as plt
 
+#RC time constant
 tau = 0.01
+
+#sampling rate
 fs = 16000
 
 dt = 1.0/fs
-a = tau/(tau + dt)
-b = dt/(tau + dt)
+a = tau/(tau+dt)
+b = dt/(tau+dt)
 
 x = np.ones(fs)
 y = np.zeros_like(x)
 
-# calculate the output with zero initial conditions
-for n in range(len(x)):
-    if n == 0:
-        y[n] = b*x[n]
-    else:
-        y[n] = a*y[n-1] + b*x[n]
-
-n = np.arange(len(y))
-s_analytic = 1 - np.exp(-n*dt/tau)
+#numeric step result convolution via DE approximation
+for n in range(len(x)): # y[n] is the current sample of the live stream
+    y[n] = a*y[n-1] + b*x[n]
 
 fig, ax = plt.subplots()
+n = np.arange(len(y))
+
+#analytic step response
+s_analytic = 1 - np.exp(-n*dt/tau)
+
+#Plot and compare analytic and numeric step results
 ax.plot(n, y, label="numeric")
 ax.plot(n, s_analytic, "--", label="analytic")
-
-ax.set_title("Analytic vs Numeric RC Step Response")
-ax.set_xlabel("Sample (n)")
-ax.set_ylabel("Output")
-ax.grid(True, alpha=0.3)
 ax.legend()
 
-fig.tight_layout()
+ax.set_title("Analytic vs. Numeric RC Step Response")
+
+ax.grid(True, alpha=0.3)
+ax.set_xlabel("Sample (n)")
+ax.set_ylabel("Output")
+
+plt.tight_layout()
 fig.savefig("task4.1_step_response.png", dpi=200)
 plt.show()
 \end{lstlisting}
@@ -647,34 +721,33 @@ b=\frac{0.0000625}{0.00155+0.0000625}
 \begin{lstlisting}[style=python]
 from scipy.io import wavfile
 import numpy as np
+import matplotlib.pyplot as plt
 
+#read sampling frequency and data from audio clip
 fs, clip = wavfile.read("clip.wav")
-clip = clip.astype(float)
+clip = clip.astype(float); 
+if clip.ndim > 1: 
+    clip = clip[:,0]
+clip = clip/np.max(np.abs(clip))
 
-if clip.ndim > 1:
-    clip = clip[:, 0]
-
-clip = clip / np.max(np.abs(clip))
-
+#RC time constant
 tau = 0.00155
+
 dt = 1.0/fs
-a = tau/(tau + dt)
-b = dt/(tau + dt)
+a = tau/(tau+dt)
+b = dt/(tau+dt)
 
 y = np.zeros_like(clip)
 
-# filter the clip using the previous output sample
-for n in range(len(clip)):
-    if n == 0:
-        y[n] = b*clip[n]
-    else:
-        y[n] = a*y[n-1] + b*clip[n]
+#numeric step result convolution via DE approximation
+for n in range(len(clip)): # y[n] is the current sample of the live stream
+    y[n] = a*y[n-1] + b*clip[n]
 
-# normalize and save the filtered audio
-y_normalized = y / np.max(np.abs(y))
-y_i16 = np.int16(y_normalized * 32767)
-
-wavfile.write("clip_RC_filter.wav", fs, y_i16)
+#write output to files for comparison
+from scipy.io import wavfile
+y_i16 = np.int16(y / np.max(np.abs(y)) * 32767) # converts to 16 bit int for wav format
+fname = "clip_RC_filter.wav"
+wavfile.write(fname, round(fs), y_i16) # writes the wav file to disk
 \end{lstlisting}
 
 \topic{Sound compared with the FIR moving average}
@@ -728,28 +801,34 @@ M(\omega_0)=\frac{1}{\sqrt{1+(\omega_0\tau)^2}},
 
 \topic{Python code}
 \begin{lstlisting}[style=python]
-# task 4.3 code
+from scipy.io import wavfile
+import numpy as np
+import matplotlib.pyplot as plt
+
+#sampling frequency
 fs = 16000
 
+#RC time constant
 tau = 0.00155
 
 dt = 1.0/fs
 a = tau/(tau+dt)
 b = dt/(tau+dt)
 
-
+#frequency list
 freq = [50, 100, 200, 500, 1000, 2000, 4000, 8000]
 
 n = np.arange(0, 1.0, dt)
 
+#FIR filter
 h_ma = np.ones(64)/64 #length-64 moving average filter      
-
 
 #create list of one second pure tones at each test frequency
 tones = []
 for f in freq:
     tones.append(np.cos(2*np.pi*f*n))
 
+#tones filted via IIR filter derived from the first stage of the RC circuit
 y_iir = []
 for t in tones:
     out = np.zeros(len(t))
@@ -760,22 +839,46 @@ for t in tones:
             out[k] = a*out[k-1] + b*t[k]
     y_iir.append(out)
 
+#tones filtered via FIR filter h_ma
 y_fir = []
 for t in tones:
     y_fir.append(np.convolve(t, h_ma))
 
-#y_analytic
-f_dense = np.logspace(np.log10(freq[0]), np.log10(freq[-1]), 500)
-H_analytic = 1/np.sqrt(1 + (2*np.pi*f_dense*tau)**2)
 
-#measure steady state amplitude of output at each frequency
+
+#measure steady state amplitude of IIR filter output at each frequency
 steady_state_amp_iir = []
 for out in y_iir:
     steady_state_amp_iir.append(np.max(np.abs(out[len(out)//2:])))
 
+#measure steady state amplitude of FIR filter output at each frequency
 steady_state_amp_fir = []
 for out in y_fir:
     steady_state_amp_fir.append(np.max(np.abs(out[len(out)//2:])))
+
+#analytic steady state amplitude for IIR filter derived from first stage of the RC circuit
+f_analytic = np.arange(50, 8000, 1)
+H_analytic = 1/np.sqrt(1 + (2*np.pi*f_analytic*tau)**2)
+
+# code for plotting freq vs amplitude
+fig, ax = plt.subplots()
+
+ax.plot(freq, steady_state_amp_iir, 'o-', label='IIR Output Steady-State Amplitude (RC circuit)')
+ax.plot(freq, steady_state_amp_fir, 'o-', label='FIR Output Steady-State Amplitude (Moving average)')
+ax.plot(f_analytic, H_analytic, label='Analytic Steady-State Amplitude (RC circuit)')
+ax.legend()
+
+ax.set_title("Amplitude vs Frequency for different filter outputs")
+
+ax.grid(True, alpha=0.3)
+ax.set_xlabel("Frequency (Hz)")
+ax.set_ylabel("Amplitude")
+ax.set_xscale('log')
+
+
+plt.tight_layout()
+fig.savefig("task4.3_amplitude_vs_freq.png", dpi=200)
+plt.show()
 \end{lstlisting}
 
 \labfigure{task4.3_amplitude_vs_freq.png}
